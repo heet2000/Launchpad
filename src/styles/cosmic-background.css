@@ -1,0 +1,401 @@
+/* SPECTACULAR COSMIC BACKGROUND */
+
+/* Advanced Color Variables */
+:root {
+  --cosmic-primary: #9D00FF;    /* Purple */
+  --cosmic-primary-glow: rgba(157, 0, 255, 0.7);
+  --cosmic-secondary: #FF69B4;  /* Hot Pink */
+  --cosmic-secondary-glow: rgba(255, 105, 180, 0.7);
+  --cosmic-accent: #8A2BE2;     /* Blue Violet */
+  --cosmic-accent-glow: rgba(138, 43, 226, 0.7);
+  --cosmic-tertiary: #B700FF;
+  --cosmic-tertiary-glow: rgba(183, 0, 255, 0.7);
+  --cosmic-dark: #000000;
+  --cosmic-darker: #0A0A0A;
+  --cosmic-darkest: #000000;
+  --cosmic-gold: #9D00FF;       /* Changed from gold to purple */
+  --cosmic-gold-glow: rgba(157, 0, 255, 0.7);
+  --cosmic-purple: #9D00FF;
+  --cosmic-purple-glow: rgba(157, 0, 255, 0.7);
+  --cosmic-red: #FF69B4;        /* Changed from red to pink */
+  --cosmic-red-glow: rgba(255, 105, 180, 0.7);
+}
+
+/* Main Cosmic Container */
+.cosmic-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(ellipse at bottom, #1a1a1a 0%, #000000 100%);
+  perspective: 1000px;
+}
+
+/* Deep Space Base Layer */
+.deep-space {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: 
+    radial-gradient(2px 2px at 20px 30px, #9D00FF, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, #9D00FF, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 90px 40px, #9D00FF, rgba(0,0,0,0));
+  animation: deepSpaceRotate 300s linear infinite;
+  opacity: 0.3;
+}
+
+/* Star Field Layers */
+.star-field {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.star-field-distant {
+  background-image: 
+    radial-gradient(1px 1px at 50% 50%, #9D00FF, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 80% 80%, #9D00FF, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 20% 20%, #9D00FF, rgba(0,0,0,0));
+  background-size: 400px 400px;
+  animation: starFieldMove 240s linear infinite;
+  opacity: 0.3;
+}
+
+.star-field-mid {
+  background-image: 
+    radial-gradient(1.5px 1.5px at 50% 50%, #9D00FF, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 70% 30%, #9D00FF, rgba(0,0,0,0));
+  background-size: 300px 300px;
+  animation: starFieldMove 180s linear infinite;
+  opacity: 0.4;
+}
+
+.star-field-close {
+  background-image: 
+    radial-gradient(2px 2px at 30% 70%, #9D00FF, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 60% 40%, #9D00FF, rgba(0,0,0,0));
+  background-size: 200px 200px;
+  animation: starFieldMove 120s linear infinite;
+  opacity: 0.5;
+}
+
+/* Realistic Nebula Effects */
+.nebula-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  filter: blur(40px);
+}
+
+.nebula {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: nebulaGlow 20s ease-in-out infinite;
+}
+
+.nebula-1 {
+  top: 20%;
+  left: 25%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at center, 
+    rgba(157, 0, 255, 0.2) 0%,
+    rgba(255, 105, 180, 0.15) 30%,
+    rgba(138, 43, 226, 0.1) 70%,
+    transparent 100%
+  );
+  animation-delay: 0s;
+}
+
+.nebula-2 {
+  top: 40%;
+  right: 30%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle at center, 
+    rgba(255, 105, 180, 0.2) 0%,
+    rgba(157, 0, 255, 0.15) 40%,
+    rgba(138, 43, 226, 0.1) 80%,
+    transparent 100%
+  );
+  animation-delay: -5s;
+}
+
+.nebula-3 {
+  bottom: 25%;
+  left: 35%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle at center, 
+    rgba(138, 43, 226, 0.2) 0%,
+    rgba(157, 0, 255, 0.15) 35%,
+    rgba(255, 105, 180, 0.1) 75%,
+    transparent 100%
+  );
+  animation-delay: -10s;
+}
+
+.nebula-4 {
+  top: 35%;
+  left: 45%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle at center, 
+    rgba(255, 105, 180, 0.2) 0%,
+    rgba(138, 43, 226, 0.15) 45%,
+    rgba(157, 0, 255, 0.1) 85%,
+    transparent 100%
+  );
+  animation-delay: -15s;
+}
+
+/* Enhanced Shooting Stars */
+.shooting-stars-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.shooting-star {
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    #9D00FF 0%, 
+    rgba(157, 0, 255, 0.4) 50%, 
+    transparent 100%
+  );
+  animation: shootingStar 6s linear infinite;
+  opacity: 0;
+}
+
+.shooting-star:nth-child(1) { top: 15%; left: -10%; animation-delay: 0s; }
+.shooting-star:nth-child(2) { top: 35%; left: -10%; animation-delay: 2s; }
+.shooting-star:nth-child(3) { top: 55%; left: -10%; animation-delay: 4s; }
+.shooting-star:nth-child(4) { top: 75%; left: -10%; animation-delay: 6s; }
+.shooting-star:nth-child(5) { top: 25%; left: -10%; animation-delay: 8s; }
+.shooting-star:nth-child(6) { top: 45%; left: -10%; animation-delay: 10s; }
+.shooting-star:nth-child(7) { top: 65%; left: -10%; animation-delay: 12s; }
+.shooting-star:nth-child(8) { top: 85%; left: -10%; animation-delay: 14s; }
+
+/* Spectacular Aurora/Northern Lights */
+.aurora-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transform: translateZ(-30px);
+}
+
+.aurora {
+  position: absolute;
+  width: 200%;
+  height: 40%;
+  filter: blur(30px);
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(157, 0, 255, 0.05) 20%,
+    rgba(255, 105, 180, 0.1) 40%,
+    rgba(138, 43, 226, 0.1) 60%,
+    rgba(157, 0, 255, 0.05) 80%,
+    transparent 100%
+  );
+  animation: auroraWave 20s ease-in-out infinite;
+  transform: translateX(-25%);
+}
+
+.aurora-1 {
+  bottom: -10%;
+  background: linear-gradient(to top,
+    transparent 0%,
+    rgba(157, 0, 255, 0.05) 20%,
+    rgba(255, 105, 180, 0.1) 40%,
+    rgba(138, 43, 226, 0.1) 60%,
+    rgba(157, 0, 255, 0.05) 80%,
+    transparent 100%
+  );
+  animation: auroraWave 20s ease-in-out infinite;
+}
+
+.aurora-2 {
+  bottom: -15%;
+  background: linear-gradient(to top,
+    transparent 0%,
+    rgba(255, 105, 180, 0.05) 20%,
+    rgba(157, 0, 255, 0.1) 40%,
+    rgba(138, 43, 226, 0.1) 60%,
+    rgba(255, 105, 180, 0.05) 80%,
+    transparent 100%
+  );
+  animation: auroraWave 25s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+.aurora-3 {
+  bottom: -20%;
+  background: linear-gradient(to top,
+    transparent 0%,
+    rgba(138, 43, 226, 0.05) 20%,
+    rgba(255, 105, 180, 0.1) 40%,
+    rgba(138, 43, 226, 0.1) 60%,
+    rgba(255, 105, 180, 0.05) 80%,
+    transparent 100%
+  );
+  animation: auroraWave 30s ease-in-out infinite;
+  animation-delay: -10s;
+}
+
+/* Floating Cosmic Dust */
+.cosmic-dust {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(1px 1px at 25% 25%, rgba(157, 0, 255, 0.1) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 50%, rgba(255, 105, 180, 0.1) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 75%, rgba(138, 43, 226, 0.1) 0%, transparent 100%);
+  background-size: 250px 250px;
+  animation: cosmicDust 150s linear infinite;
+  opacity: 0.5;
+}
+
+/* Glowing Orbs */
+.cosmic-orbs {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.orb {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, 
+    rgba(157, 0, 255, 0.4) 0%,
+    rgba(157, 0, 255, 0.1) 30%,
+    transparent 70%
+  );
+  filter: blur(5px);
+  animation: orbFloat 20s ease-in-out infinite;
+}
+
+.orb-1 { top: 20%; left: 20%; animation-delay: 0s; }
+.orb-2 { top: 60%; left: 80%; animation-delay: -4s; }
+.orb-3 { top: 80%; left: 40%; animation-delay: -8s; }
+.orb-4 { top: 40%; left: 60%; animation-delay: -12s; }
+.orb-5 { top: 30%; left: 30%; animation-delay: -16s; }
+
+/* Distant Galaxies */
+.galaxy {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(157, 0, 255, 0.1) 25%,
+    rgba(255, 105, 180, 0.1) 50%,
+    rgba(138, 43, 226, 0.1) 75%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  filter: blur(20px);
+  animation: galaxyRotate 30s linear infinite;
+}
+
+.galaxy-1 { top: 10%; left: 10%; animation-delay: 0s; }
+.galaxy-2 { top: 70%; left: 80%; animation-delay: -6s; }
+.galaxy-3 { top: 40%; left: 60%; animation-delay: -12s; }
+.galaxy-4 { top: 80%; left: 30%; animation-delay: -18s; }
+.galaxy-5 { top: 20%; left: 70%; animation-delay: -24s; }
+
+/* Keyframe Animations */
+@keyframes deepSpaceRotate {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes starFieldMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 1000px 1000px; }
+}
+
+@keyframes nebulaGlow {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+@keyframes shootingStar {
+  0% { transform: translateX(0) translateY(0) rotate(45deg); opacity: 1; }
+  100% { transform: translateX(1000px) translateY(-1000px) rotate(45deg); opacity: 0; }
+}
+
+@keyframes cosmicDust {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+  50% { transform: translateY(-20px) scale(1.1); opacity: 0.5; }
+}
+
+@keyframes galaxyRotate {
+  0% { transform: rotate(0deg) scale(1); opacity: 0.2; }
+  50% { transform: rotate(180deg) scale(1.2); opacity: 0.4; }
+  100% { transform: rotate(360deg) scale(1); opacity: 0.2; }
+}
+
+@keyframes auroraWave {
+  0% {
+    transform: translateX(-25%) scaleY(1);
+    filter: blur(30px) brightness(0.8);
+  }
+  50% {
+    transform: translateX(-35%) scaleY(1.2);
+    filter: blur(40px) brightness(1);
+  }
+  100% {
+    transform: translateX(-45%) scaleY(1);
+    filter: blur(30px) brightness(0.8);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nebula {
+    transform: scale(0.7);
+  }
+  
+  .galaxy {
+    transform: scale(0.6);
+  }
+  
+  .shooting-star {
+    width: 100px;
+  }
+}
+
+/* Performance Optimizations */
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-background * {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
