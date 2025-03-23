@@ -11,14 +11,14 @@ import './styles/cosmic-background.css';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (!currentUser) {
+  if (!isAuthenticated()) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
@@ -27,13 +27,13 @@ const ProtectedRoute = ({ children }) => {
 
 // Public route - redirects to dashboard if already logged in
 const PublicRoute = ({ children }) => {
-  const { currentUser, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (currentUser) {
+  if (isAuthenticated()) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -46,7 +46,7 @@ function App() {
       <div className="App">
         <CosmicBackground />
         <Routes>
-          {/* Public routes - Login is now the home page */}
+          {/* Public routes */}
           <Route
             path="/"
             element={
@@ -68,21 +68,21 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              // <ProtectedRoute>
-              <Dashboard />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/upload"
             element={
-              // <ProtectedRoute>
-              <FileUpload />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <FileUpload />
+              </ProtectedRoute>
             }
           />
 
-          {/* Fallback route - redirect to home/login */}
+          {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

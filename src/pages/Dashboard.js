@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
-import { useAuth } from '../context/AuthContext';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
-import { Box, Typography, Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import Calender from '../charts/calendar';
 import GaugeChart from '../charts/gauge-chart';
 import LineChart from '../charts/line-chart';
@@ -45,10 +43,6 @@ const Logo = styled.div`
 `;
 
 const Dashboard = () => {
-    const [files, setFiles] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const { currentUser } = useAuth();
-    const firestore = getFirestore();
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
     const [isTablet, setIsTablet] = useState(window.innerWidth > 600 && window.innerWidth <= 960);
 
@@ -64,69 +58,6 @@ const Dashboard = () => {
             window.removeEventListener('resize', handleResize);
         };
     }, []);
-
-    // Fetch user's files from Firestore
-    useEffect(() => {
-        const fetchFiles = async () => {
-            try {
-                const q = query(
-                    collection(firestore, 'files'),
-                    where('userId', '==', currentUser?.uid || 'guest')
-                );
-
-                const querySnapshot = await getDocs(q);
-                const filesData = [];
-
-                querySnapshot.forEach((doc) => {
-                    filesData.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-
-                // Sort by creation date (newest first)
-                filesData.sort((a, b) => {
-                    return b.createdAt?.toDate() - a.createdAt?.toDate();
-                });
-
-                setFiles(filesData);
-            } catch (error) {
-                console.error('Error fetching files:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (currentUser) {
-            fetchFiles();
-        } else {
-            setLoading(false);
-        }
-    }, [currentUser, firestore]);
-
-    // Get file stats
-    const totalFiles = files.length;
-    const totalSizeBytes = files.reduce((acc, file) => acc + (file.fileSize || 0), 0);
-    const totalSizeMB = (totalSizeBytes / (1024 * 1024)).toFixed(2);
-
-    // Format date for display
-    const formatDate = (timestamp) => {
-        if (!timestamp) return 'Unknown date';
-
-        try {
-            const date = timestamp.toDate();
-            return new Intl.DateTimeFormat('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }).format(date);
-        } catch (error) {
-            console.error('Error formatting date:', error);
-            return 'Invalid date';
-        }
-    };
 
     return (
         <DashboardLayout>

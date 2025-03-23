@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaTachometerAlt, FaFileUpload, FaBars, FaTimes, FaCheckCircle } from 'react-icons/fa';
-import { Checkbox, FormControlLabel, Typography } from '@mui/material';
+import { FaTachometerAlt, FaFileUpload, FaBars, FaTimes, FaCheckCircle, FaSignOutAlt } from 'react-icons/fa';
+import { Checkbox, FormControlLabel, Typography, Snackbar, Alert, Button } from '@mui/material';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const SidebarContainer = styled(motion.div)`
   position: fixed;
@@ -31,7 +33,6 @@ const Logo = styled.div`
   font-weight: bold;
   margin-bottom: 40px;
   text-align: center;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
 `;
 
 const NavLinks = styled.nav`
@@ -60,26 +61,15 @@ const NavLink = styled(Link)`
   }
 
   &:hover {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.2);
+    background: rgb(199 0 255 / 15%);
+    border-color: rgb(213 0 255 / 25%);
     transform: translateX(5px);
-    
-    svg {
-      opacity: 1;
-      transform: scale(1.1);
-    }
   }
 
   &.active {
-    background: rgba(255, 215, 0, 0.15);
-    border-color: rgba(255, 215, 0, 0.25);
-    color: var(--primary-color);
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
-
-    svg {
-      opacity: 1;
-      transform: scale(1.1);
-    }
+    background: rgb(199 0 255 / 15%);
+    border-color: rgb(213 0 255 / 25%);
+    color: #9d00ff;
   }
 `;
 
@@ -103,8 +93,6 @@ const ToggleButton = styled.button`
 
   &:hover {
     background: rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.2);
-    transform: scale(1.05);
   }
 
   @media (min-width: 769px) {
@@ -115,56 +103,117 @@ const ToggleButton = styled.button`
 const AttendanceContainer = styled.div`
   margin-top: auto;
   padding: 20px;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
+  border-top: 1px solid rgba(225, 0, 255, 0.1);
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
-  transition: all 0.3s ease;
+`;
 
+const LogoutButton = styled(Button)`
+  width: 100%;
+  margin-top: 15px !important;
+  background: rgba(255, 0, 0, 0.2) !important;
+  color: #ff5252 !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease !important;
+  
   &:hover {
-    background: rgba(255, 215, 0, 0.05);
-    border-color: rgba(255, 215, 0, 0.2);
-  }
-
-  .MuiFormControlLabel-root {
-    margin: 0;
-    width: 100%;
-  }
-
-  .MuiCheckbox-root {
-    color: rgba(255, 215, 0, 0.5);
-    
-    &.Mui-checked {
-      color: var(--primary-color);
-    }
-  }
-
-  .MuiTypography-root {
-    color: var(--light-color);
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-
-    svg {
-      color: var(--success-color);
-    }
+    background: rgba(255, 0, 0, 0.3) !important;
   }
 `;
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isPresent, setIsPresent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
+
+  // Check if attendance was already marked today
+  useEffect(() => {
+    const checkTodayAttendance = () => {
+      const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
+      const today = new Date().toISOString().split('T')[0];
+
+      if (lastAttendanceDate === today) {
+        setIsPresent(true);
+      }
+    };
+
+    checkTodayAttendance();
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handlePresentChange = (event) => {
-    setIsPresent(event.target.checked);
-    // Here you could add code to save the present status to your database
-    console.log(`User marked as ${event.target.checked ? 'present' : 'absent'}`);
+  const formatDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  const handlePresentChange = async (event) => {
+    const isChecked = event.target.checked;
+    setIsPresent(isChecked);
+
+    if (isChecked && currentUser) {
+      setLoading(true);
+
+      try {
+        // Get empId from localStorage
+        const empId = currentUser.empId;
+
+        if (!empId) {
+          throw new Error('Employee ID not found. Please log in again.');
+        }
+
+        // Send attendance data to API
+        const response = await axios.post('http://127.0.0.1:5003/attendance', {
+          empId: empId,
+          date: formatDate(),
+          status: 'Present'
+        });
+
+        if (response.status === 201 || response.status === 200) {
+          // Save today's date as last attendance date
+          localStorage.setItem('lastAttendanceDate', formatDate());
+
+          setMessage('Attendance marked successfully!');
+          setMessageType('success');
+          setOpenSnackbar(true);
+        } else {
+          throw new Error('Failed to mark attendance');
+        }
+      } catch (error) {
+        setIsPresent(false);
+        setMessage(error.response?.data?.message || error.message || 'Failed to mark attendance');
+        setMessageType('error');
+        setOpenSnackbar(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setOpenSnackbar(true);
+    setMessage('Successfully logged out');
+    setMessageType('success');
+
+    // Navigate to login page after a brief delay
+    setTimeout(() => {
+      navigate('/');
+    }, 1500);
   };
 
   return (
@@ -202,19 +251,17 @@ const Sidebar = () => {
           </NavLink>
         </NavLinks>
 
-        <AttendanceContainer isOpen={isOpen}>
+        <AttendanceContainer>
           <FormControlLabel
             control={
               <Checkbox
                 checked={isPresent}
                 onChange={handlePresentChange}
+                disabled={loading}
                 sx={{
                   color: 'rgba(138, 92, 245, 0.7)',
                   '&.Mui-checked': {
                     color: 'var(--primary-color)',
-                  },
-                  '& .MuiSvgIcon-root': {
-                    fontSize: 28,
                   },
                 }}
               />
@@ -228,19 +275,33 @@ const Sidebar = () => {
                   alignItems: 'center',
                   gap: '8px',
                   fontSize: '14px',
-                  transition: 'all 0.3s ease'
                 }}
               >
-                Mark Present
+                {loading ? 'Marking Attendance...' : 'Mark Present'}
                 {isPresent && <FaCheckCircle color="#4cd964" />}
               </Typography>
             }
-            sx={{
-              margin: 0
-            }}
           />
+
+          <LogoutButton
+            startIcon={<FaSignOutAlt />}
+            onClick={handleLogout}
+          >
+            Logout
+          </LogoutButton>
         </AttendanceContainer>
       </SidebarContainer>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={messageType} sx={{ width: '100%' }}>
+          {message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

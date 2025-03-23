@@ -1,23 +1,33 @@
-# Secure File Management Web App
+# LaunchPad - Employee Management & File Sharing Web App
 
-A modern web application for storing, managing, and sharing files securely. This application is built with React and includes features such as user authentication, file uploading with drag and drop functionality, and a responsive design with an attractive animated background.
+A modern web application for employee management, attendance tracking, and secure file sharing. This application is built with React and includes features such as user authentication, employee registration, attendance tracking, and file uploading with drag and drop functionality.
 
 ## Features
 
-- **User Authentication**: Secure user registration and login with Firebase Authentication
-- **Dashboard**: Visual overview of your files and activities
-- **File Upload**: Easy file uploading with drag and drop functionality
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Animated UI**: Beautiful and engaging user interface with animations
+- **User Authentication**: Secure user registration and login with email/password
+- **Employee Management**: Register new employees with detailed information
+- **Attendance Tracking**: Mark daily attendance through an intuitive sidebar interface
+- **Dashboard**: Visual overview of attendance patterns, leaves, and activities with interactive charts
+- **File Upload**: Easy file uploading with drag and drop functionality (supports PDF and TXT formats)
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **Animated UI**: Beautiful and engaging user interface with smooth animations
 
 ## Technologies Used
 
 - React
 - React Router DOM (for routing)
-- Firebase (Authentication, Firestore, Storage)
+- Axios (for API requests)
 - Styled Components (for styling)
 - Framer Motion (for animations)
+- Material-UI (for UI components)
 - React Icons
+- Day.js (for date handling)
+
+## APIs Used
+
+- Employee Registration API: `http://127.0.0.1:5003/employees`
+- Attendance API: `http://127.0.0.1:5003/attendance`
+- File Upload API: `http://127.0.0.1:5003/upload`
 
 ## Getting Started
 
@@ -25,6 +35,7 @@ A modern web application for storing, managing, and sharing files securely. This
 
 - Node.js (v14.0 or higher recommended)
 - npm or yarn
+- Backend server running on port 5003
 
 ### Installation
 
@@ -44,26 +55,11 @@ A modern web application for storing, managing, and sharing files securely. This
    yarn install
    ```
 
-4. Set up Firebase:
-   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Enable Authentication, Firestore, and Storage services
-   - Get your Firebase configuration
-
-5. Configure environment variables:
-   - Rename `.env.example` to `.env` (or create a new `.env` file)
-   - Add your Firebase configuration to the `.env` file:
-     ```
-     REACT_APP_FIREBASE_API_KEY=your-api-key
-     REACT_APP_FIREBASE_AUTH_DOMAIN=your-app.firebaseapp.com
-     REACT_APP_FIREBASE_PROJECT_ID=your-app-id
-     REACT_APP_FIREBASE_STORAGE_BUCKET=your-app.appspot.com
-     REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-     REACT_APP_FIREBASE_APP_ID=your-app-id
-     ```
-
 ### Running the Application
 
-1. Start the development server:
+1. Make sure your backend server is running on port 5003
+
+2. Start the development server:
    ```
    npm start
    ```
@@ -72,7 +68,7 @@ A modern web application for storing, managing, and sharing files securely. This
    yarn start
    ```
 
-2. Open your browser and navigate to `http://localhost:3000`
+3. Open your browser and navigate to `http://localhost:3000`
 
 ### Building for Production
 
@@ -89,13 +85,41 @@ The build will be created in the `build` folder.
 
 ## Project Structure
 
-- `src/components`: Reusable UI components
-- `src/context`: Context providers for state management
-- `src/hooks`: Custom React hooks
-- `src/pages`: Application pages/views
+- `src/components`: Reusable UI components including DashboardLayout and Sidebar
+- `src/context`: Context providers for authentication and state management
+- `src/hooks`: Custom React hooks for file uploading and other functionality
+- `src/pages`: Application pages including Login, Register, Dashboard, and FileUpload
+- `src/charts`: Chart components for the dashboard visualizations
 - `src/styles`: Global styles
-- `src/utils`: Utility functions
-- `src/assets`: Static assets like images
+
+## Usage Guide
+
+### Registration
+1. Navigate to the registration page
+2. Fill in required employee details (name, email, phone, role, level, etc.)
+3. Submit to create a new employee account
+
+### Login
+1. Enter your registered email and password
+2. Click "Login" to access the dashboard
+
+### Attendance Marking
+1. On the sidebar, check the "Mark Present" box to record your attendance for the day
+2. A confirmation message will appear when attendance is successfully recorded
+
+### File Upload
+1. Navigate to the "Upload Files" page
+2. Drag and drop PDF or TXT files, or click to browse
+3. Click "Upload All Files" to upload selected files
+4. View upload progress and status for each file
+
+## Calendar Color Guide
+
+- **Purple**: Weekend days (Saturday and Sunday)
+- **Orange**: Future days
+- **Green**: Present days (days you were present)
+- **Red**: Leave days
+- **Bordered**: Today's date
 
 ## License
 
@@ -103,9 +127,9 @@ This project is licensed under the MIT License
 
 ## Acknowledgements
 
-- [Create React App](https://create-react-app.dev/)
-- [Firebase](https://firebase.google.com/)
-- [React Router](https://reactrouter.com/)
+- [React](https://reactjs.org/)
+- [Material-UI](https://mui.com/)
 - [Styled Components](https://styled-components.com/)
 - [Framer Motion](https://www.framer.com/motion/)
 - [React Icons](https://react-icons.github.io/react-icons/)
+- [Day.js](https://day.js.org/)

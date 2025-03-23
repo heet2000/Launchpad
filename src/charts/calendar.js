@@ -117,11 +117,20 @@ const StyledDay = styled(PickersDay)`
   }
   
   &.weekend {
-    background: rgba(158, 158, 158, 0.2) !important;
-    color: rgba(255, 255, 255, 0.5) !important;
+    background: rgba(158, 0, 255, 0.3) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
     
     &:hover {
-      background: rgba(158, 158, 158, 0.3) !important;
+      background: rgba(158, 0, 255, 0.4) !important;
+    }
+  }
+  
+  &.future {
+    background: rgba(255, 157, 0, 0.3) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    
+    &:hover {
+      background: rgba(255, 157, 0, 0.4) !important;
     }
   }
   
@@ -184,16 +193,21 @@ const initialValue = dayjs();
 function ServerDay(props) {
     const { leaveDays = [], day, outsideCurrentMonth, ...other } = props;
 
+    const today = dayjs();
+
     // Check if the day is a weekend
     const isWeekendDay = isWeekend(day);
+
+    // Check if the day is in the future
+    const isFutureDay = day.isAfter(today, 'day');
 
     // Check if the day is marked as leave (one of the 3 random days)
     const isLeaveDay = !outsideCurrentMonth && !isWeekendDay && leaveDays.indexOf(day.date()) >= 0;
 
     // If not a weekend or leave day and not outside current month, it's a present day
-    const isPresentDay = !outsideCurrentMonth && !isWeekendDay && !isLeaveDay;
+    const isPresentDay = !outsideCurrentMonth && !isWeekendDay && !isLeaveDay && !isFutureDay && day.isBefore(today, 'day');
 
-    const isToday = day.isSame(dayjs(), 'day');
+    const isToday = day.isSame(today, 'day');
 
     return (
         <StyledDay
@@ -204,6 +218,7 @@ function ServerDay(props) {
                 ${isPresentDay ? 'present' : ''} 
                 ${isLeaveDay ? 'leave' : ''} 
                 ${isWeekendDay ? 'weekend' : ''} 
+                ${isFutureDay ? 'future' : ''}
                 ${isToday ? 'today' : ''}
             `}
             sx={{

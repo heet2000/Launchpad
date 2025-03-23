@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 const LoginContainer = styled.div`
@@ -23,7 +23,6 @@ const LoginTitle = styled.h2`
   color: var(--primary-color);
   font-size: 28px;
   text-align: center;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
 `;
 
 const LoginForm = styled.form`
@@ -69,23 +68,15 @@ const SubmitButton = styled(motion.button)`
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   color: var(--dark-color);
-  transition: all 0.3s ease;
   margin-top: 20px;
   
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
-  }
-  
   &:disabled {
-    background: linear-gradient(135deg, #9e9e9e, #757575);
+    opacity: 0.7;
     cursor: not-allowed;
-    box-shadow: none;
   }
 `;
 
@@ -113,8 +104,6 @@ const RegisterLink = styled.div`
     
     &:hover {
       text-decoration: underline;
-      color: var(--accent-color);
-      text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
     }
   }
 `;
@@ -124,8 +113,15 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Check if user is already authenticated and redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -141,8 +137,7 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (error) {
-      setError('Failed to log in. Please check your credentials.');
-      console.error(error);
+      setError('Failed to log in. ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -164,7 +159,7 @@ const Login = () => {
             <LoginForm onSubmit={handleSubmit}>
               <InputGroup>
                 <InputIcon>
-                  <FaUser />
+                  <FaEnvelope />
                 </InputIcon>
                 <Input
                   type="email"
