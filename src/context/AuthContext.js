@@ -39,54 +39,43 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             // Get the registered user data from localStorage
-            const registeredUserData = localStorage.getItem('registeredUser');
 
-            if (!registeredUserData) {
-                throw new Error('No registered user found. Please register first.');
-            }
-
-            const response = await axios.post('https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/login', { email, password }, {
+            const response = await axios.post('https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/login', { email, password }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-api-key': 'abcdef',
                 }
             });
 
-            const registeredUser = JSON.parse(registeredUserData);
+            if (response.status === 200 || response.status === 201) {
+                // If validation passes, set the user
+                const user = {
+                    email,
+                    empId: response?.data?.empId
+                };
 
-            // Validate credentials
-            if (email !== registeredUser.email || password !== registeredUser.password) {
-                throw new Error('Invalid email or password');
+                // Generate mock token
+                const mockToken = response.data?.token;
+
+                // Set expiration time (current time + 30 minutes)
+                const expirationTime = new Date().getTime() + TOKEN_EXPIRATION;
+
+                // Store in localStorage
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('authToken', mockToken);
+                localStorage.setItem('tokenExpiration', expirationTime.toString());
+
+                // Set in state
+                setCurrentUser(user);
+                setToken(mockToken);
+
+                // Set up auto-logout when token expires
+                setTimeout(() => {
+                    logout();
+                }, TOKEN_EXPIRATION);
+
+                return user;
             }
-
-            // If validation passes, set the user
-            const user = {
-                email: registeredUser.email,
-                name: registeredUser.name,
-                empId: registeredUser.empId
-            };
-
-            // Generate mock token
-            const mockToken = response.data?.token;
-
-            // Set expiration time (current time + 30 minutes)
-            const expirationTime = new Date().getTime() + TOKEN_EXPIRATION;
-
-            // Store in localStorage
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('authToken', mockToken);
-            localStorage.setItem('tokenExpiration', expirationTime.toString());
-
-            // Set in state
-            setCurrentUser(user);
-            setToken(mockToken);
-
-            // Set up auto-logout when token expires
-            setTimeout(() => {
-                logout();
-            }, TOKEN_EXPIRATION);
-
-            return user;
         } catch (error) {
             throw error;
         }

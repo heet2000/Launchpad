@@ -332,7 +332,7 @@ const Sidebar = () => {
       const date = formatDate();
 
       // Send attendance data to API with authToken in header
-      const response = await axios.post('https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance', {
+      const response = await axios.post('https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance', {
         empId: empId,
         date: date,
         status: isChecked ? 'Present' : "Absent"
@@ -393,7 +393,7 @@ const Sidebar = () => {
     // Navigate to login page after a brief delay
     setTimeout(() => {
       navigate('/');
-    }, 1500);
+    }, 500);
   };
 
   return (

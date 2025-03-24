@@ -159,7 +159,7 @@ const Register = () => {
       setLoading(true);
 
       localStorage.setItem('registeredUser', JSON.stringify(userData));
-      const response = await axios.post('https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/register', userData, {
+      const response = await axios.post('https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/register', userData, {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': 'abcdef'

@@ -166,7 +166,7 @@ export async function fetchAttendanceData(empId, authToken) {
     try {
         // Try with standard headers first
         try {
-            const response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+            const response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Accept': 'application/json',
@@ -181,7 +181,7 @@ export async function fetchAttendanceData(empId, authToken) {
         } catch (error) {
             console.log('First attempt failed, trying with Postman-like headers');
             // If first attempt fails, try with Postman-like headers
-            const response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+            const response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Accept': '*/*',
@@ -282,7 +282,7 @@ export default function DateCalendarServerRequest() {
             // Try to fetch attendance data from API
             let response;
             try {
-                response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Accept': 'application/json',
@@ -296,7 +296,7 @@ export default function DateCalendarServerRequest() {
                 // If first request fails, try with different headers that mimic Postman
                 if (!controller.signal.aborted) {
                     console.log('Trying with Postman-like headers');
-                    response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                    response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`,
                             'Accept': '*/*',
@@ -321,7 +321,7 @@ export default function DateCalendarServerRequest() {
                 if (isHtmlResponse) {
                     console.error('Received HTML response instead of JSON');
                     // Try one more time with explicit JSON headers
-                    response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                    response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`,
                             'Accept': 'application/json',
