@@ -7,6 +7,7 @@ import { PickersDay } from '@mui/x-date-pickers/PickersDay';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton';
 import { Box } from '@mui/material';
+import axios from 'axios';
 
 // Styled components
 const StyledCalendarContainer = styled(Box)(({ theme }) => ({
@@ -152,46 +153,58 @@ function isWeekend(date) {
     return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
 }
 
-function getRandomNumber(min, max) {
-    return Math.round(Math.random() * (max - min) + min);
-}
+// Set initial value to March 2025
+const initialValue = dayjs('2025-03-15');
 
-function getRandomWeekdaysInMonth(date) {
-    const daysInMonth = date.daysInMonth();
-    const leaveDays = [];
-
-    // Keep trying to add leave days until we have 3 unique weekday leave days
-    while (leaveDays.length < 3) {
-        const randomDay = getRandomNumber(1, daysInMonth);
-        const randomDate = date.date(randomDay);
-
-        // Only add the day if it's not a weekend and not already in the array
-        if (!isWeekend(randomDate) && !leaveDays.includes(randomDay)) {
-            leaveDays.push(randomDay);
-        }
+// Function to fetch attendance data - exported for direct use by other components
+export async function fetchAttendanceData(empId, authToken) {
+    if (!empId || !authToken) {
+        console.error('Missing empId or authToken');
+        return null;
     }
 
-    return leaveDays;
+    try {
+        // Try with standard headers first
+        try {
+            const response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                responseType: 'json'
+            });
+
+            if (response.status === 200) {
+                return response.data;
+            }
+        } catch (error) {
+            console.log('First attempt failed, trying with Postman-like headers');
+            // If first attempt fails, try with Postman-like headers
+            const response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'PostmanRuntime/7.30.0'
+                },
+                responseType: 'json'
+            });
+
+            if (response.status === 200) {
+                return response.data;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching attendance data:', error);
+        return null;
+    }
+
+    return null;
 }
-
-function fakeFetch(date, { signal }) {
-    return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            const leaveDays = getRandomWeekdaysInMonth(date);
-            resolve({ leaveDays });
-        }, 500);
-
-        signal.onabort = () => {
-            clearTimeout(timeout);
-            reject(new DOMException('aborted', 'AbortError'));
-        };
-    });
-}
-
-const initialValue = dayjs();
 
 function ServerDay(props) {
-    const { leaveDays = [], day, outsideCurrentMonth, ...other } = props;
+    const { attendanceDays = [], leaveDays = [], day, outsideCurrentMonth, ...other } = props;
 
     const today = dayjs();
 
@@ -201,11 +214,11 @@ function ServerDay(props) {
     // Check if the day is in the future
     const isFutureDay = day.isAfter(today, 'day');
 
-    // Check if the day is marked as leave (one of the 3 random days)
-    const isLeaveDay = !outsideCurrentMonth && !isWeekendDay && leaveDays.indexOf(day.date()) >= 0;
+    // Check if the day is marked as present (from attendance API)
+    const isPresentDay = !outsideCurrentMonth && attendanceDays.includes(day.date());
 
-    // If not a weekend or leave day and not outside current month, it's a present day
-    const isPresentDay = !outsideCurrentMonth && !isWeekendDay && !isLeaveDay && !isFutureDay && day.isBefore(today, 'day');
+    // Check if the day is marked as leave
+    const isLeaveDay = !outsideCurrentMonth && !isWeekendDay && leaveDays.includes(day.date());
 
     const isToday = day.isSame(today, 'day');
 
@@ -232,30 +245,234 @@ export default function DateCalendarServerRequest() {
     const requestAbortController = React.useRef(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [leaveDays, setLeaveDays] = React.useState([]);
+    const [attendanceDays, setAttendanceDays] = React.useState([]);
 
-    const fetchLeaveDays = (date) => {
+    const fetchLeaveDays = async (date) => {
+        // Only fetch data for March 2025
+        if (date.month() !== 2 || date.year() !== 2025) {
+            setLeaveDays([]);
+            setAttendanceDays([]);
+            setIsLoading(false);
+            return;
+        }
+
         const controller = new AbortController();
-        fakeFetch(date, {
-            signal: controller.signal,
-        })
-            .then(({ leaveDays }) => {
-                setLeaveDays(leaveDays);
+        setIsLoading(true);
+
+        try {
+            // Get user data from localStorage
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                console.error('User data not found in localStorage');
                 setIsLoading(false);
-            })
-            .catch((error) => {
-                // ignore the error if it's caused by `controller.abort`
-                if (error.name !== 'AbortError') {
-                    throw error;
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            const empId = user.empId;
+
+            // Get auth token from localStorage
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                console.error('Auth token not found in localStorage');
+                setIsLoading(false);
+                return;
+            }
+
+            // Try to fetch attendance data from API
+            let response;
+            try {
+                response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    responseType: 'json',
+                    signal: controller.signal
+                });
+            } catch (error) {
+                console.error('Error in first API request attempt:', error);
+                // If first request fails, try with different headers that mimic Postman
+                if (!controller.signal.aborted) {
+                    console.log('Trying with Postman-like headers');
+                    response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Accept': '*/*',
+                            'Content-Type': 'application/json',
+                            'User-Agent': 'PostmanRuntime/7.30.0',
+                            'Cache-Control': 'no-cache'
+                        },
+                        responseType: 'json',
+                        signal: controller.signal
+                    });
+                } else {
+                    throw error; // Rethrow if aborted
                 }
-            });
+            }
+
+            // Check if we got a valid response
+            if (response && response.status === 200) {
+                // Check if response is HTML instead of JSON
+                const isHtmlResponse = typeof response.data === 'string' &&
+                    response.data.includes('<!DOCTYPE html>');
+
+                if (isHtmlResponse) {
+                    console.error('Received HTML response instead of JSON');
+                    // Try one more time with explicit JSON headers
+                    response = await axios.post(`https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        responseType: 'json',
+                        signal: controller.signal
+                    });
+                }
+
+                // Process the response data
+                let attendanceData = response.data;
+                let presentDays = [];
+                let absentDays = [];
+
+                // Handle different possible response formats
+                if (Array.isArray(attendanceData?.PRESENT) && Array.isArray(attendanceData?.ABSENT)) {
+                    // Process standard format with PRESENT and ABSENT arrays
+                    presentDays = attendanceData.PRESENT.map(record => {
+                        if (typeof record === 'string' && record.includes('-')) {
+                            return parseInt(record.split("-")[2]);
+                        }
+                        return null;
+                    }).filter(day => day !== null);
+
+                    absentDays = attendanceData.ABSENT.map(record => {
+                        if (typeof record === 'string' && record.includes('-')) {
+                            return parseInt(record.split("-")[2]);
+                        }
+                        return null;
+                    }).filter(day => day !== null);
+                } else if (attendanceData && typeof attendanceData === 'object') {
+                    // Try to handle other possible formats
+                    // Check if data is in a nested property
+                    const dataProperty = attendanceData.data || attendanceData.attendance || attendanceData;
+
+                    if (dataProperty) {
+                        if (Array.isArray(dataProperty.present) && Array.isArray(dataProperty.absent)) {
+                            presentDays = dataProperty.present.map(d => typeof d === 'string' ?
+                                parseInt(d.split('-')[2]) : d.day || d.date || null).filter(Boolean);
+
+                            absentDays = dataProperty.absent.map(d => typeof d === 'string' ?
+                                parseInt(d.split('-')[2]) : d.day || d.date || null).filter(Boolean);
+                        } else if (Array.isArray(dataProperty)) {
+                            // Handle array of attendance records
+                            dataProperty.forEach(record => {
+                                const day = typeof record.date === 'string' ?
+                                    parseInt(record.date.split('-')[2]) :
+                                    record.day || null;
+
+                                if (day) {
+                                    if (record.status?.toLowerCase() === 'present') {
+                                        presentDays.push(day);
+                                    } else if (record.status?.toLowerCase() === 'absent') {
+                                        absentDays.push(day);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                setAttendanceDays(presentDays);
+                setLeaveDays(absentDays);
+            } else {
+                console.error('Invalid response status:', response?.status);
+            }
+        }
+        catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Error fetching attendance data:', error);
+            }
+        }
+        finally {
+            setIsLoading(false);
+        }
 
         requestAbortController.current = controller;
     };
 
+    // Initial data fetch on component mount
     React.useEffect(() => {
         fetchLeaveDays(initialValue);
         // abort request on unmount
         return () => requestAbortController.current?.abort();
+    }, []);
+
+    // Listen for attendance marked event
+    React.useEffect(() => {
+        const handleAttendanceMarked = (event) => {
+            console.log('Attendance marked event received', event.detail);
+
+            // Extract details from the event
+            const { date, status, empId } = event.detail;
+
+            if (date && status && empId) {
+                console.log(`Attendance marked: ${status} for ${empId} on ${date}`);
+
+                // Immediately update local state to show feedback while we re-fetch
+                if (status === 'Present') {
+                    // Extract the day from the date (format YYYY-MM-DD)
+                    const day = parseInt(date.split('-')[2]);
+
+                    // Check if this is for March 2025
+                    if (date.startsWith('2025-03-')) {
+                        // Update the local state to show immediate feedback
+                        setAttendanceDays(prev => {
+                            if (!prev.includes(day)) {
+                                return [...prev, day];
+                            }
+                            return prev;
+                        });
+
+                        // Remove from leave days if present
+                        setLeaveDays(prev => prev.filter(d => d !== day));
+                    }
+                } else if (status === 'Absent') {
+                    // Extract the day from the date
+                    const day = parseInt(date.split('-')[2]);
+
+                    // Check if this is for March 2025
+                    if (date.startsWith('2025-03-')) {
+                        // Update the local state to show immediate feedback
+                        setLeaveDays(prev => {
+                            if (!prev.includes(day)) {
+                                return [...prev, day];
+                            }
+                            return prev;
+                        });
+
+                        // Remove from attendance days if present
+                        setAttendanceDays(prev => prev.filter(d => d !== day));
+                    }
+                }
+
+                // Now fetch from the API to ensure our data is in sync
+                fetchLeaveDays(initialValue);
+            } else {
+                console.warn('Attendance marked event missing required details');
+                fetchLeaveDays(initialValue);
+            }
+        };
+
+        // Add event listener
+        window.addEventListener('attendanceMarked', handleAttendanceMarked);
+
+        // Cleanup function to remove event listener
+        return () => {
+            window.removeEventListener('attendanceMarked', handleAttendanceMarked);
+        };
     }, []);
 
     const handleMonthChange = (date) => {
@@ -267,6 +484,7 @@ export default function DateCalendarServerRequest() {
 
         setIsLoading(true);
         setLeaveDays([]);
+        setAttendanceDays([]);
         fetchLeaveDays(date);
     };
 
@@ -274,7 +492,6 @@ export default function DateCalendarServerRequest() {
         <StyledCalendarContainer>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateCalendar
-                    defaultValue={initialValue}
                     loading={isLoading}
                     onMonthChange={handleMonthChange}
                     renderLoading={() => <DayCalendarSkeleton />}
@@ -284,6 +501,7 @@ export default function DateCalendarServerRequest() {
                     slotProps={{
                         day: {
                             leaveDays,
+                            attendanceDays,
                         },
                     }}
                     sx={{

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-
+import axios from 'axios';
 // Create Auth Context
 const AuthContext = createContext();
 
@@ -45,6 +45,13 @@ export const AuthProvider = ({ children }) => {
                 throw new Error('No registered user found. Please register first.');
             }
 
+            const response = await axios.post('https://e78a-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/login', { email, password }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': 'abcdef',
+                }
+            });
+
             const registeredUser = JSON.parse(registeredUserData);
 
             // Validate credentials
@@ -60,7 +67,7 @@ export const AuthProvider = ({ children }) => {
             };
 
             // Generate mock token
-            const mockToken = `token_${Math.random().toString(36).substring(2, 15)}`;
+            const mockToken = response.data?.token;
 
             // Set expiration time (current time + 30 minutes)
             const expirationTime = new Date().getTime() + TOKEN_EXPIRATION;
