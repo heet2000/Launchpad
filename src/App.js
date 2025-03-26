@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import CosmicBackground from './components/CosmicBackground';
 import Login from './pages/Login';
@@ -12,20 +12,20 @@ import './styles/global.css';
 import './styles/cosmic-background.css';
 
 // Protected Route component
-// const ProtectedRoute = ({ children }) => {
-//   const { isAuthenticated, loading } = useAuth();
-//   const location = useLocation();
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-//   if (!isAuthenticated()) {
-//     return <Navigate to="/" state={{ from: location }} replace />;
-//   }
+  if (!isAuthenticated()) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
 
-//   return children;
-// };
+  return children;
+};
 
 // Public route - redirects to dashboard if already logged in
 const PublicRoute = ({ children }) => {
@@ -70,33 +70,33 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              // <ProtectedRoute>
-              <Dashboard />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/upload"
             element={
-              // <ProtectedRoute>
-              <FileUpload />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <FileUpload />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/apply-leaves"
             element={
-              // <ProtectedRoute>
-              <ApplyLeaves />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <ApplyLeaves />
+              </ProtectedRoute>
             }
           />
           <Route
             path="/approve-leaves"
             element={
-              // <ProtectedRoute>
-              <ApproveLeaves />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <ApproveLeaves />
+              </ProtectedRoute>
             }
           />
 

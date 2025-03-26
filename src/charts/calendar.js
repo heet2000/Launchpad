@@ -183,7 +183,8 @@ export async function fetchAttendanceData(empId, authToken) {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                responseType: 'json'
+                responseType: 'json',
+                withCredentials: true
             });
 
             if (response.status === 200) {

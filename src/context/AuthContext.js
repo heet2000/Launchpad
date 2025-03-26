@@ -8,9 +8,17 @@ const TOKEN_EXPIRATION = 30 * 60 * 1000;
 
 // Export Auth Context Provider
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+    // Initialize state from localStorage if available
+    const [currentUser, setCurrentUser] = useState(() => {
+        const userData = localStorage.getItem('user');
+        return userData ? JSON.parse(userData) : null;
+    });
+
     const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState(null);
+
+    const [token, setToken] = useState(() => {
+        return localStorage.getItem('authToken') || null;
+    });
 
     // Check if user is logged in when the component mounts
     useEffect(() => {
@@ -33,6 +41,21 @@ export const AuthProvider = ({ children }) => {
         };
 
         checkUserSession();
+
+        // Set up event listener for storage changes (for multi-tab support)
+        const handleStorageChange = (e) => {
+            if (e.key === 'authToken' && !e.newValue) {
+                // Token was removed in another tab
+                setCurrentUser(null);
+                setToken(null);
+            } else if (e.key === 'user' && e.newValue) {
+                // User was updated in another tab
+                setCurrentUser(JSON.parse(e.newValue));
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     // Login function
@@ -44,7 +67,8 @@ export const AuthProvider = ({ children }) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-api-key': 'abcdef',
-                }
+                },
+                withCredentials: true
             });
 
             if (response.status === 200 || response.status === 201) {
@@ -93,8 +117,17 @@ export const AuthProvider = ({ children }) => {
 
     // Check if token is valid
     const isAuthenticated = () => {
+        // Check token in state first
+        if (token) {
+            const tokenExpiration = localStorage.getItem('tokenExpiration');
+            return !!tokenExpiration && new Date().getTime() < parseInt(tokenExpiration, 10);
+        }
+
+        // If no token in state, check localStorage directly (useful during refresh)
+        const storedToken = localStorage.getItem('authToken');
         const tokenExpiration = localStorage.getItem('tokenExpiration');
-        return !!token && !!tokenExpiration && new Date().getTime() < parseInt(tokenExpiration, 10);
+
+        return !!storedToken && !!tokenExpiration && new Date().getTime() < parseInt(tokenExpiration, 10);
     };
 
     const value = {
