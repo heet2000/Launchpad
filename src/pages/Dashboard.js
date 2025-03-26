@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -45,6 +45,15 @@ const Logo = styled.div`
 const Dashboard = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
     const [isTablet, setIsTablet] = useState(window.innerWidth > 600 && window.innerWidth <= 960);
+    const [leaveData, setLeaveData] = useState({});
+    console.log(leaveData, "leaveData");
+
+    const monthwiseLeave = useMemo(() => {
+        if (leaveData?.monthly_leaves) {
+            return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(monthNo => (leaveData?.monthly_leaves[monthNo] || 0));
+        }
+        return [];
+    }, [leaveData]);
 
     // Add event listener for responsive design
     useEffect(() => {
@@ -125,7 +134,7 @@ const Dashboard = () => {
                                             height: '100% !important'
                                         }
                                     }}>
-                                        <Calender />
+                                        <Calender setLeaveData={setLeaveData} />
                                     </Box>
                                 </Box>
                             </motion.div>
@@ -162,7 +171,7 @@ const Dashboard = () => {
                                             height: '100% !important'
                                         }
                                     }}>
-                                        <GaugeChart data={15} maxValue={24} />
+                                        <GaugeChart data={leaveData?.remaining_leaves || 15} maxValue={leaveData?.max_allowed_leaves || 22} />
                                     </Box>
                                 </Box>
                             </motion.div>
@@ -198,7 +207,7 @@ const Dashboard = () => {
                                             height: '100% !important'
                                         }
                                     }}>
-                                        <LineChart />
+                                        <LineChart data={monthwiseLeave} />
                                     </Box>
                                 </Box>
                             </motion.div>

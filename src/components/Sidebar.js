@@ -257,34 +257,43 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const authToken = localStorage.getItem('authToken');
 
   // Check if attendance was already marked today
   useEffect(() => {
     const checkTodayAttendance = async () => {
+      if (!currentUser || !authToken) {
+        console.log('Missing user or token data, skipping attendance check');
+        return;
+      }
+
       // Check localStorage first
       const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
       const lastAttendanceStatus = localStorage.getItem('lastAttendanceStatus');
       const today = formatDate();
 
       if (lastAttendanceDate === today && lastAttendanceStatus) {
+        console.log('Found attendance in localStorage:', lastAttendanceStatus);
         setAttendanceStatus(lastAttendanceStatus.toLowerCase());
         return;
       }
 
       // If not in localStorage, check with the API
       try {
+        console.log('Checking attendance status from API...');
         // Get empId and authToken
         const empId = currentUser?.empId;
-        const authToken = localStorage.getItem('authToken');
 
         if (empId && authToken) {
           // Fetch attendance data from API using the exported function
           const attendanceData = await fetchAttendanceData(empId, authToken);
+          console.log('Attendance data received:', attendanceData);
 
           if (attendanceData) {
             // Check today's attendance status
             const todayStr = today; // Already in YYYY-MM-DD format
 
+            // Try multiple possible formats for the API response
             if (Array.isArray(attendanceData.PRESENT) && attendanceData.PRESENT.some(date => date === todayStr)) {
               setAttendanceStatus('present');
               localStorage.setItem('lastAttendanceStatus', 'present');
@@ -293,6 +302,19 @@ const Sidebar = () => {
               setAttendanceStatus('wfh');
               localStorage.setItem('lastAttendanceStatus', 'wfh');
               localStorage.setItem('lastAttendanceDate', today);
+            } else if (attendanceData.attendance) {
+              // Alternative format where attendance is a nested property
+              const data = attendanceData.attendance;
+
+              if (Array.isArray(data.PRESENT) && data.PRESENT.some(date => date === todayStr)) {
+                setAttendanceStatus('present');
+                localStorage.setItem('lastAttendanceStatus', 'present');
+                localStorage.setItem('lastAttendanceDate', today);
+              } else if (Array.isArray(data.WFH) && data.WFH.some(date => date === todayStr)) {
+                setAttendanceStatus('wfh');
+                localStorage.setItem('lastAttendanceStatus', 'wfh');
+                localStorage.setItem('lastAttendanceDate', today);
+              }
             }
           }
         }
@@ -302,7 +324,7 @@ const Sidebar = () => {
     };
 
     checkTodayAttendance();
-  }, [currentUser]);
+  }, [currentUser, authToken]); // Add authToken as dependency to refresh on login/logout
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -444,7 +466,6 @@ const Sidebar = () => {
             </NavLink>
           )}
 
-
           <NavLink
             to="/apply-leaves"
             className={location.pathname === '/apply-leaves' ? 'active' : ''}
@@ -453,15 +474,13 @@ const Sidebar = () => {
             <span>Apply Leaves</span>
           </NavLink>
 
-          {currentUser?.email === "admin@payoda.com" && (
-            <NavLink
-              to="/approve-leaves"
-              className={location.pathname === '/approve-leaves' ? 'active' : ''}
-            >
-              <FaUserCheck />
-              <span>Approve Leaves</span>
-            </NavLink>
-          )}
+          <NavLink
+            to="/approve-leaves"
+            className={location.pathname === '/approve-leaves' ? 'active' : ''}
+          >
+            <FaUserCheck />
+            <span>Approve Leaves</span>
+          </NavLink>
 
           <NavButton onClick={handleOpenTwilioModal}>
             <FaVideo />

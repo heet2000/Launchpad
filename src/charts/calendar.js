@@ -257,14 +257,14 @@ function ServerDay(props) {
     );
 }
 
-export default function DateCalendarServerRequest() {
+export default function DateCalendarServerRequest({ setLeaveData }) {
     const requestAbortController = React.useRef(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [leaveDays, setLeaveDays] = React.useState([]);
     const [attendanceDays, setAttendanceDays] = React.useState([]);
     const [wfhDays, setWfhDays] = React.useState([]);
 
-    const fetchLeaveDays = async (date) => {
+    const fetchLeaveDays = React.useCallback(async (date) => {
         // Only fetch data for March 2025
         if (date.month() !== 2 || date.year() !== 2025) {
             setLeaveDays([]);
@@ -352,7 +352,9 @@ export default function DateCalendarServerRequest() {
                 }
 
                 // Process the response data
-                let attendanceData = response.data;
+                let attendanceData = response.data?.attendance;
+                setLeaveData(response.data?.leave_stats);
+
                 let presentDays = [];
                 let absentDays = [];
                 let workFromHomeDays = [];
@@ -446,14 +448,14 @@ export default function DateCalendarServerRequest() {
         }
 
         requestAbortController.current = controller;
-    };
+    }, [setLeaveData])
 
-    // Initial data fetch on component mount
+    // Fetch data immediately on component mount
     React.useEffect(() => {
         fetchLeaveDays(initialValue);
         // abort request on unmount
         return () => requestAbortController.current?.abort();
-    }, []);
+    }, [fetchLeaveDays]);
 
     // Listen for attendance marked event
     React.useEffect(() => {
@@ -526,20 +528,12 @@ export default function DateCalendarServerRequest() {
         return () => {
             window.removeEventListener('attendanceMarked', handleAttendanceMarked);
         };
-    }, []);
+    }, [fetchLeaveDays]);
 
+    // Disable the month change functionality entirely
     const handleMonthChange = (date) => {
-        if (requestAbortController.current) {
-            // make sure that you are aborting useless requests
-            // because it is possible to switch between months pretty quickly
-            requestAbortController.current.abort();
-        }
-
-        setIsLoading(true);
-        setLeaveDays([]);
-        setAttendanceDays([]);
-        setWfhDays([]);
-        fetchLeaveDays(date);
+        // Always reset back to March 2025
+        return initialValue;
     };
 
     return (
@@ -547,7 +541,13 @@ export default function DateCalendarServerRequest() {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateCalendar
                     loading={isLoading}
+                    defaultValue={initialValue}
+                    value={initialValue}
                     onMonthChange={handleMonthChange}
+                    minDate={dayjs('2025-03-01')}
+                    maxDate={dayjs('2025-03-31')}
+                    disableFuture={false}
+                    disablePast={false}
                     renderLoading={() => <DayCalendarSkeleton />}
                     slots={{
                         day: ServerDay,
@@ -562,6 +562,13 @@ export default function DateCalendarServerRequest() {
                     sx={{
                         width: '100%',
                         height: '100%',
+                        // Disable month switch buttons and navigation
+                        '& .MuiPickersArrowSwitcher-root': {
+                            display: 'none',
+                        },
+                        '& .MuiPickersCalendarHeader-switchViewButton': {
+                            display: 'none'
+                        },
                         '& .MuiDayCalendar-weekDayLabel': {
                             color: 'rgba(255, 255, 255, 0.7)',
                             fontWeight: 600,

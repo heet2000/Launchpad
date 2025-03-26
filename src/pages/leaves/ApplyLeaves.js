@@ -3,7 +3,6 @@ import {
     Box,
     Container,
     Typography,
-    TextField,
     Select,
     MenuItem,
     FormControl,
@@ -14,7 +13,14 @@ import {
     Chip,
     CircularProgress,
     Snackbar,
-    Alert
+    Alert,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
@@ -42,7 +48,7 @@ const ContentContainer = styled(Box)`
 `;
 
 const PageTitle = styled(Typography)(({ theme }) => ({
-    color: 'var(--primary-color)',
+    color: '#ffffff',
     marginBottom: '30px',
     fontWeight: 600,
     fontSize: '1.8rem',
@@ -68,7 +74,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 const CardTitle = styled(Typography)(({ theme }) => ({
     fontSize: '1.2rem',
     fontWeight: 600,
-    color: 'var(--primary-color)',
+    color: '#ffffff',
     marginBottom: '10px'
 }));
 
@@ -87,43 +93,22 @@ const LeaveChip = styled(Chip)(({ theme, status }) => ({
     marginLeft: 'auto'
 }));
 
-const StyledTextField = styled(TextField)(({ theme }) => ({
-    marginBottom: '20px',
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-        },
-        '&:hover fieldset': {
-            borderColor: 'rgba(255, 255, 255, 0.4)',
-        },
-        '&.Mui-focused fieldset': {
-            borderColor: 'var(--primary-color)',
-        },
-    },
-    '& .MuiInputLabel-root': {
-        color: 'rgba(255, 255, 255, 0.6)',
-    },
-    '& .MuiInputBase-input': {
-        color: 'rgba(255, 255, 255, 0.9)',
-    },
-}));
-
 const StyledSelect = styled(Select)(({ theme }) => ({
     marginBottom: '20px',
     '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(255, 255, 255, 0.3)',
     },
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'var(--primary-color)',
+        borderColor: '#4caf50',
     },
     '&:hover .MuiOutlinedInput-notchedOutline': {
-        borderColor: 'rgba(255, 255, 255, 0.4)',
+        borderColor: 'rgba(255, 255, 255, 0.5)',
     },
     '& .MuiSelect-select': {
-        color: 'rgba(255, 255, 255, 0.9)',
+        color: '#ffffff',
     },
     '& .MuiSvgIcon-root': {
-        color: 'rgba(255, 255, 255, 0.6)',
+        color: 'rgba(255, 255, 255, 0.8)',
     },
 }));
 
@@ -136,7 +121,7 @@ const SubmitButton = styled(Button)(({ theme }) => ({
     marginTop: '15px',
     transition: 'all 0.3s ease',
     '&:hover': {
-        background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%)',
+        background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%)',
         transform: 'translateY(-3px)',
         boxShadow: '0 7px 14px rgba(0, 0, 0, 0.2)',
     },
@@ -156,10 +141,69 @@ const FilterSection = styled(Box)(({ theme }) => ({
 }));
 
 const FilterTitle = styled(Typography)(({ theme }) => ({
-    color: 'var(--primary-color)',
+    color: '#ffffff',
     marginBottom: '15px',
     fontWeight: 600,
     fontSize: '1.2rem',
+}));
+
+const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
+    background: 'rgba(20, 20, 30, 0.8)',
+    borderRadius: '12px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    marginTop: '20px',
+    maxHeight: '400px',
+    overflowY: 'auto',
+    '&::-webkit-scrollbar': {
+        width: '8px',
+    },
+    '&::-webkit-scrollbar-track': {
+        background: 'rgba(0, 0, 0, 0.1)',
+        borderRadius: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+        background: 'rgba(76, 175, 80, 0.5)',
+        borderRadius: '4px',
+        '&:hover': {
+            background: 'rgba(76, 175, 80, 0.7)',
+        }
+    },
+}));
+
+const StyledTableHead = styled(TableHead)(({ theme }) => ({
+    '& .MuiTableCell-head': {
+        backgroundColor: 'rgba(0, 0, 0, 0.93)',
+        color: '#ffffff',
+        fontWeight: 600,
+        fontSize: '1rem',
+        padding: '16px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10000,
+    },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    transition: 'all 0.3s ease',
+    '&:nth-of-type(odd)': {
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    },
+    '&:hover': {
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    },
+    '&:last-child td, &:last-child th': {
+        border: 0,
+    },
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    color: '#ffffff',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    padding: '12px 16px',
+    fontSize: '0.9rem',
 }));
 
 const ApplyLeaves = () => {
@@ -167,7 +211,6 @@ const ApplyLeaves = () => {
     const [leaveType, setLeaveType] = useState('LEAVE');
     const [startDate, setStartDate] = useState(dayjs());
     const [endDate, setEndDate] = useState(dayjs().add(1, 'day'));
-    const [reason, setReason] = useState('');
     const [leaves, setLeaves] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -175,7 +218,6 @@ const ApplyLeaves = () => {
     const [messageType, setMessageType] = useState('success');
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [filterType, setFilterType] = useState('ALL');
-    const [filterLocation, setFilterLocation] = useState('');
 
     const fetchLeaves = useCallback(async () => {
         if (!currentUser) return;
@@ -185,30 +227,20 @@ const ApplyLeaves = () => {
             const authToken = localStorage.getItem('authToken');
 
             // Build the API URL with filters
-            let url = `https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/leaves/${currentUser.empId}`;
+            let url = `https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/employees/${currentUser.empId}/requests?type=created`;
 
-            // Add query parameters for filters if they're set
-            const params = new URLSearchParams();
-            if (filterType !== 'ALL') {
-                params.append('type', filterType);
-            }
-            if (filterLocation) {
-                params.append('location', filterLocation);
-            }
-
-            if (params.toString()) {
-                url += `?${params.toString()}`;
-            }
-
-            const response = await axios.get(url, {
+            const response = await axios.post(url, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Content-Type': 'application/json'
                 }
             });
 
-            if (response.status === 200) {
+            if (response.status === 200 || response.status === 201 || response.status === 202) {
                 // Transform the response data into the format we need
+                console.log(response.data);
+                setLoading(false);
+
                 setLeaves(response.data || []);
             }
         } catch (error) {
@@ -219,7 +251,7 @@ const ApplyLeaves = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentUser, filterType, filterLocation]);
+    }, [currentUser]);
 
     // Fetch leaves data on component mount
     useEffect(() => {
@@ -229,9 +261,7 @@ const ApplyLeaves = () => {
     // Fetch leaves when filters change
     useEffect(() => {
         fetchLeaves();
-    }, [filterType, filterLocation, fetchLeaves]);
-
-
+    }, [filterType, fetchLeaves]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -243,7 +273,7 @@ const ApplyLeaves = () => {
             return;
         }
 
-        if (!leaveType || !reason) {
+        if (!leaveType || !startDate || !endDate) {
             setMessage('Please fill in all required fields');
             setMessageType('error');
             setOpenSnackbar(true);
@@ -257,15 +287,13 @@ const ApplyLeaves = () => {
 
             const leaveData = {
                 empId: currentUser.empId,
-                leaveType,
-                location: "N/A",
-                startDate: startDate.format('YYYY-MM-DD'),
-                endDate: endDate.format('YYYY-MM-DD'),
-                reason
+                requestType: leaveType,
+                fromDate: startDate.format('YYYY-MM-DD'),
+                toDate: endDate.format('YYYY-MM-DD'),
             };
 
             const response = await axios.post(
-                'https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/leaves',
+                'https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/request-approvals',
                 leaveData,
                 {
                     headers: {
@@ -284,7 +312,6 @@ const ApplyLeaves = () => {
                 setLeaveType('LEAVE');
                 setStartDate(dayjs());
                 setEndDate(dayjs().add(1, 'day'));
-                setReason('');
 
                 // Refresh the leaves list
                 fetchLeaves();
@@ -303,12 +330,18 @@ const ApplyLeaves = () => {
         setOpenSnackbar(false);
     };
 
-    const resetFilters = () => {
-        setFilterType('ALL');
-        setFilterLocation('');
-        // Fetch leaves with reset filters
-        fetchLeaves();
-    };
+    const filteredLeaves = React.useMemo(() => {
+        if (!leaves || !Array.isArray(leaves)) return [];
+
+        return leaves.filter(leave => {
+            // Filter by type if filter is not set to ALL
+            if (filterType !== 'ALL' && leave.requestType !== filterType) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [leaves, filterType]);
 
     return (
         <PageContainer>
@@ -329,7 +362,7 @@ const ApplyLeaves = () => {
                                 <Grid container spacing={3}>
                                     <Grid item xs={12}>
                                         <FormControl fullWidth>
-                                            <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>Leave Type</InputLabel>
+                                            <InputLabel sx={{ color: '#ffffff' }}>Leave Type</InputLabel>
                                             <StyledSelect
                                                 value={leaveType}
                                                 onChange={(e) => setLeaveType(e.target.value)}
@@ -352,9 +385,33 @@ const ApplyLeaves = () => {
                                                 mb: 2,
                                                 '& .MuiOutlinedInput-root': {
                                                     '& fieldset': {
-                                                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                                                        borderColor: 'rgba(255, 255, 255, 0.3)',
                                                     },
+                                                    '&:hover fieldset': {
+                                                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: '#4caf50',
+                                                    },
+                                                    '& input': {
+                                                        color: '#ffffff'
+                                                    },
+                                                    '& .MuiInputLabel-root': {
+                                                        color: '#ffffff'
+                                                    },
+                                                    '& .MuiInputAdornment-root': {
+                                                        color: 'rgba(255, 255, 255, 0.8)'
+                                                    },
+                                                    '&.Mui-focused .MuiSvgIcon-root': {
+                                                        color: '#4caf50'
+                                                    }
                                                 },
+                                                '& .MuiFormLabel-root': {
+                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                    '&.Mui-focused': {
+                                                        color: '#4caf50'
+                                                    }
+                                                }
                                             }}
                                         />
                                     </Grid>
@@ -370,23 +427,35 @@ const ApplyLeaves = () => {
                                                 mb: 2,
                                                 '& .MuiOutlinedInput-root': {
                                                     '& fieldset': {
-                                                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                                                        borderColor: 'rgba(255, 255, 255, 0.3)',
                                                     },
+                                                    '&:hover fieldset': {
+                                                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                                                    },
+                                                    '&.Mui-focused fieldset': {
+                                                        borderColor: '#4caf50',
+                                                    },
+                                                    '& input': {
+                                                        color: '#ffffff',
+                                                        borderColor: '#ffffff'
+                                                    },
+                                                    '& .MuiInputLabel-root': {
+                                                        color: '#ffffff'
+                                                    },
+                                                    '& .MuiInputAdornment-root': {
+                                                        color: 'rgba(255, 255, 255, 0.8)'
+                                                    },
+                                                    '&.Mui-focused .MuiSvgIcon-root': {
+                                                        color: '#4caf50'
+                                                    }
                                                 },
+                                                '& .MuiFormLabel-root': {
+                                                    color: 'rgba(255, 255, 255, 0.7)',
+                                                    '&.Mui-focused': {
+                                                        color: '#4caf50'
+                                                    }
+                                                }
                                             }}
-                                        />
-                                    </Grid>
-
-                                    <Grid item xs={12}>
-                                        <StyledTextField
-                                            label="Reason"
-                                            fullWidth
-                                            multiline
-                                            rows={4}
-                                            value={reason}
-                                            onChange={(e) => setReason(e.target.value)}
-                                            required
-                                            placeholder="Enter the reason for your leave"
                                         />
                                     </Grid>
                                 </Grid>
@@ -411,7 +480,7 @@ const ApplyLeaves = () => {
                                     <Grid container spacing={3}>
                                         <Grid item xs={12} md={6}>
                                             <FormControl fullWidth>
-                                                <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>Type</InputLabel>
+                                                <InputLabel sx={{ color: '#ffffff' }}>Type</InputLabel>
                                                 <StyledSelect
                                                     value={filterType}
                                                     onChange={(e) => setFilterType(e.target.value)}
@@ -423,60 +492,14 @@ const ApplyLeaves = () => {
                                                 </StyledSelect>
                                             </FormControl>
                                         </Grid>
-
-                                        <Grid item xs={12} md={6}>
-                                            <StyledTextField
-                                                label="Location"
-                                                fullWidth
-                                                value={filterLocation}
-                                                onChange={(e) => setFilterLocation(e.target.value)}
-                                                placeholder="Filter by location"
-                                            />
-                                        </Grid>
                                     </Grid>
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-                                        <Typography variant="body1" sx={{ color: 'var(--primary-color)', fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+                                        <Typography variant="body1" sx={{ color: '#ffffff', fontWeight: 500, display: 'flex', alignItems: 'center' }}>
                                             {!loading && (
-                                                <>{leaves.length} {leaves.length === 1 ? 'application' : 'applications'} found</>
+                                                <>{filteredLeaves.length} {filteredLeaves.length === 1 ? 'application' : 'applications'} found</>
                                             )}
                                         </Typography>
-                                        <Box>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={resetFilters}
-                                                sx={{
-                                                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                                                    color: 'rgba(255, 255, 255, 0.8)',
-                                                    mr: 2,
-                                                    '&:hover': {
-                                                        borderColor: 'var(--primary-color)',
-                                                        background: 'rgba(157, 0, 255, 0.1)',
-                                                    }
-                                                }}
-                                            >
-                                                Clear Filters
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                onClick={fetchLeaves}
-                                                sx={{
-                                                    background: 'linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%)',
-                                                    color: '#fff',
-                                                    fontWeight: 600,
-                                                    padding: '8px 16px',
-                                                    borderRadius: '8px',
-                                                    transition: 'all 0.3s ease',
-                                                    '&:hover': {
-                                                        background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%)',
-                                                        transform: 'translateY(-2px)',
-                                                        boxShadow: '0 7px 14px rgba(0, 0, 0, 0.2)',
-                                                    }
-                                                }}
-                                            >
-                                                Apply Filters
-                                            </Button>
-                                        </Box>
                                     </Box>
                                 </FilterSection>
 
@@ -484,54 +507,48 @@ const ApplyLeaves = () => {
                                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
                                         <CircularProgress />
                                     </Box>
-                                ) : leaves.length > 0 ? (
-                                    <Grid container spacing={3}>
-                                        {leaves.map((leave) => (
-                                            <Grid item xs={12} key={leave.id}>
-                                                <StyledCard>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Typography variant="h6" sx={{ color: 'var(--primary-color)', fontWeight: 600 }}>
-                                                            {leave.leaveType}
-                                                        </Typography>
-                                                        <LeaveChip
-                                                            label={leave.status}
-                                                            status={leave.status}
-                                                            size="small"
-                                                        />
-                                                    </Box>
-
-                                                    <Grid container spacing={2}>
-                                                        <Grid item xs={12} sm={6}>
-                                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 0.5 }}>
-                                                                Location:
+                                ) : filteredLeaves.length > 0 ? (
+                                    <StyledTableContainer component={Paper}>
+                                        <Table stickyHeader aria-label="leave applications table">
+                                            <StyledTableHead>
+                                                <TableRow>
+                                                    <StyledTableCell>Start Date</StyledTableCell>
+                                                    <StyledTableCell>End Date</StyledTableCell>
+                                                    <StyledTableCell>Request Type</StyledTableCell>
+                                                    <StyledTableCell align="right">Status</StyledTableCell>
+                                                </TableRow>
+                                            </StyledTableHead>
+                                            <TableBody>
+                                                {filteredLeaves.map((leave) => (
+                                                    <StyledTableRow key={leave.id || leave._id}>
+                                                        <StyledTableCell>
+                                                            {new Date(leave.fromDate).toLocaleDateString()}
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            {new Date(leave.toDate).toLocaleDateString()}
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Typography
+                                                                sx={{
+                                                                    color: leave.requestType === 'LEAVE' ? '#ff9800' : '#2196f3',
+                                                                    fontWeight: 500
+                                                                }}
+                                                            >
+                                                                {leave.requestType}
                                                             </Typography>
-                                                            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                                                                {leave.location}
-                                                            </Typography>
-                                                        </Grid>
-
-                                                        <Grid item xs={12} sm={6}>
-                                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 0.5 }}>
-                                                                Dates:
-                                                            </Typography>
-                                                            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                                                                {new Date(leave.startDate).toLocaleDateString()} to {new Date(leave.endDate).toLocaleDateString()}
-                                                            </Typography>
-                                                        </Grid>
-
-                                                        <Grid item xs={12}>
-                                                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 0.5 }}>
-                                                                Reason:
-                                                            </Typography>
-                                                            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                                                                {leave.reason}
-                                                            </Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </StyledCard>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
+                                                        </StyledTableCell>
+                                                        <StyledTableCell align="right">
+                                                            <LeaveChip
+                                                                label={leave?.requestStatus}
+                                                                status={leave?.requestStatus}
+                                                                size="small"
+                                                            />
+                                                        </StyledTableCell>
+                                                    </StyledTableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </StyledTableContainer>
                                 ) : (
                                     <Box sx={{
                                         textAlign: 'center',
