@@ -117,6 +117,17 @@ const StyledDay = styled(PickersDay)`
     }
   }
   
+  &.wfh {
+    background: linear-gradient(135deg, #2196f3, #64b5f6) !important;
+    color: white !important;
+    font-weight: bold;
+    
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.6);
+    }
+  }
+  
   &.weekend {
     background: rgba(158, 0, 255, 0.3) !important;
     color: rgba(255, 255, 255, 0.8) !important;
@@ -166,7 +177,7 @@ export async function fetchAttendanceData(empId, authToken) {
     try {
         // Try with standard headers first
         try {
-            const response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+            const response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId}?days=31`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Accept': 'application/json',
@@ -181,7 +192,7 @@ export async function fetchAttendanceData(empId, authToken) {
         } catch (error) {
             console.log('First attempt failed, trying with Postman-like headers');
             // If first attempt fails, try with Postman-like headers
-            const response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+            const response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId}?days=31`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Accept': '*/*',
@@ -204,7 +215,7 @@ export async function fetchAttendanceData(empId, authToken) {
 }
 
 function ServerDay(props) {
-    const { attendanceDays = [], leaveDays = [], day, outsideCurrentMonth, ...other } = props;
+    const { attendanceDays = [], leaveDays = [], wfhDays = [], day, outsideCurrentMonth, ...other } = props;
 
     const today = dayjs();
 
@@ -220,6 +231,9 @@ function ServerDay(props) {
     // Check if the day is marked as leave
     const isLeaveDay = !outsideCurrentMonth && !isWeekendDay && leaveDays.includes(day.date());
 
+    // Check if the day is marked as WFH
+    const isWfhDay = !outsideCurrentMonth && wfhDays.includes(day.date());
+
     const isToday = day.isSame(today, 'day');
 
     return (
@@ -230,6 +244,7 @@ function ServerDay(props) {
             className={`
                 ${isPresentDay ? 'present' : ''} 
                 ${isLeaveDay ? 'leave' : ''} 
+                ${isWfhDay ? 'wfh' : ''}
                 ${isWeekendDay ? 'weekend' : ''} 
                 ${isFutureDay ? 'future' : ''}
                 ${isToday ? 'today' : ''}
@@ -246,12 +261,14 @@ export default function DateCalendarServerRequest() {
     const [isLoading, setIsLoading] = React.useState(false);
     const [leaveDays, setLeaveDays] = React.useState([]);
     const [attendanceDays, setAttendanceDays] = React.useState([]);
+    const [wfhDays, setWfhDays] = React.useState([]);
 
     const fetchLeaveDays = async (date) => {
         // Only fetch data for March 2025
         if (date.month() !== 2 || date.year() !== 2025) {
             setLeaveDays([]);
             setAttendanceDays([]);
+            setWfhDays([]);
             setIsLoading(false);
             return;
         }
@@ -282,7 +299,7 @@ export default function DateCalendarServerRequest() {
             // Try to fetch attendance data from API
             let response;
             try {
-                response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
+                response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Accept': 'application/json',
@@ -296,7 +313,7 @@ export default function DateCalendarServerRequest() {
                 // If first request fails, try with different headers that mimic Postman
                 if (!controller.signal.aborted) {
                     console.log('Trying with Postman-like headers');
-                    response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
+                    response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`,
                             'Accept': '*/*',
@@ -321,7 +338,7 @@ export default function DateCalendarServerRequest() {
                 if (isHtmlResponse) {
                     console.error('Received HTML response instead of JSON');
                     // Try one more time with explicit JSON headers
-                    response = await axios.post(`https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                    response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId}?days=31`, {}, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`,
                             'Accept': 'application/json',
@@ -337,56 +354,83 @@ export default function DateCalendarServerRequest() {
                 let attendanceData = response.data;
                 let presentDays = [];
                 let absentDays = [];
+                let workFromHomeDays = [];
 
                 // Handle different possible response formats
-                if (Array.isArray(attendanceData?.PRESENT) && Array.isArray(attendanceData?.ABSENT)) {
-                    // Process standard format with PRESENT and ABSENT arrays
-                    presentDays = attendanceData.PRESENT.map(record => {
-                        if (typeof record === 'string' && record.includes('-')) {
-                            return parseInt(record.split("-")[2]);
-                        }
-                        return null;
-                    }).filter(day => day !== null);
+                if (attendanceData) {
+                    // First, try with the standard format with arrays
+                    if (Array.isArray(attendanceData.PRESENT)) {
+                        presentDays = attendanceData.PRESENT
+                            .filter(record => typeof record === 'string' && record.includes('-'))
+                            .map(record => parseInt(record.split("-")[2]))
+                            .filter(day => !isNaN(day));
+                    }
 
-                    absentDays = attendanceData.ABSENT.map(record => {
-                        if (typeof record === 'string' && record.includes('-')) {
-                            return parseInt(record.split("-")[2]);
-                        }
-                        return null;
-                    }).filter(day => day !== null);
-                } else if (attendanceData && typeof attendanceData === 'object') {
-                    // Try to handle other possible formats
-                    // Check if data is in a nested property
-                    const dataProperty = attendanceData.data || attendanceData.attendance || attendanceData;
+                    if (Array.isArray(attendanceData.ABSENT)) {
+                        absentDays = attendanceData.ABSENT
+                            .filter(record => typeof record === 'string' && record.includes('-'))
+                            .map(record => parseInt(record.split("-")[2]))
+                            .filter(day => !isNaN(day));
+                    }
 
-                    if (dataProperty) {
-                        if (Array.isArray(dataProperty.present) && Array.isArray(dataProperty.absent)) {
-                            presentDays = dataProperty.present.map(d => typeof d === 'string' ?
-                                parseInt(d.split('-')[2]) : d.day || d.date || null).filter(Boolean);
+                    if (Array.isArray(attendanceData.WFH)) {
+                        workFromHomeDays = attendanceData.WFH
+                            .filter(record => typeof record === 'string' && record.includes('-'))
+                            .map(record => parseInt(record.split("-")[2]))
+                            .filter(day => !isNaN(day));
+                    }
 
-                            absentDays = dataProperty.absent.map(d => typeof d === 'string' ?
-                                parseInt(d.split('-')[2]) : d.day || d.date || null).filter(Boolean);
-                        } else if (Array.isArray(dataProperty)) {
-                            // Handle array of attendance records
-                            dataProperty.forEach(record => {
-                                const day = typeof record.date === 'string' ?
-                                    parseInt(record.date.split('-')[2]) :
-                                    record.day || null;
+                    // If the standard format doesn't have data, try alternative formats
+                    if (presentDays.length === 0 && absentDays.length === 0 && workFromHomeDays.length === 0) {
+                        const dataProperty = attendanceData.data || attendanceData.attendance || attendanceData;
 
-                                if (day) {
-                                    if (record.status?.toLowerCase() === 'present') {
+                        if (dataProperty) {
+                            if (Array.isArray(dataProperty.present)) {
+                                presentDays = dataProperty.present
+                                    .map(d => typeof d === 'string' ? parseInt(d.split('-')[2]) : d.day || d.date || null)
+                                    .filter(Boolean);
+                            }
+
+                            if (Array.isArray(dataProperty.absent)) {
+                                absentDays = dataProperty.absent
+                                    .map(d => typeof d === 'string' ? parseInt(d.split('-')[2]) : d.day || d.date || null)
+                                    .filter(Boolean);
+                            }
+
+                            if (Array.isArray(dataProperty.wfh)) {
+                                workFromHomeDays = dataProperty.wfh
+                                    .map(d => typeof d === 'string' ? parseInt(d.split('-')[2]) : d.day || d.date || null)
+                                    .filter(Boolean);
+                            }
+
+                            // Try with an array of records with status fields
+                            if (Array.isArray(dataProperty)) {
+                                dataProperty.forEach(record => {
+                                    if (!record || !record.date) return;
+
+                                    const day = typeof record.date === 'string'
+                                        ? parseInt(record.date.split('-')[2])
+                                        : record.day || null;
+
+                                    if (!day) return;
+
+                                    const status = record.status?.toUpperCase();
+                                    if (status === 'PRESENT') {
                                         presentDays.push(day);
-                                    } else if (record.status?.toLowerCase() === 'absent') {
+                                    } else if (status === 'ABSENT') {
                                         absentDays.push(day);
+                                    } else if (status === 'WFH') {
+                                        workFromHomeDays.push(day);
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
                 }
 
                 setAttendanceDays(presentDays);
                 setLeaveDays(absentDays);
+                setWfhDays(workFromHomeDays);
             } else {
                 console.error('Invalid response status:', response?.status);
             }
@@ -422,13 +466,11 @@ export default function DateCalendarServerRequest() {
                 console.log(`Attendance marked: ${status} for ${empId} on ${date}`);
 
                 // Immediately update local state to show feedback while we re-fetch
-                if (status === 'Present') {
-                    // Extract the day from the date (format YYYY-MM-DD)
+                if (date.startsWith('2025-03-')) {
                     const day = parseInt(date.split('-')[2]);
 
-                    // Check if this is for March 2025
-                    if (date.startsWith('2025-03-')) {
-                        // Update the local state to show immediate feedback
+                    if (status === 'Present') {
+                        // Update attendance days
                         setAttendanceDays(prev => {
                             if (!prev.includes(day)) {
                                 return [...prev, day];
@@ -436,16 +478,12 @@ export default function DateCalendarServerRequest() {
                             return prev;
                         });
 
-                        // Remove from leave days if present
+                        // Remove from other categories
                         setLeaveDays(prev => prev.filter(d => d !== day));
-                    }
-                } else if (status === 'Absent') {
-                    // Extract the day from the date
-                    const day = parseInt(date.split('-')[2]);
+                        setWfhDays(prev => prev.filter(d => d !== day));
 
-                    // Check if this is for March 2025
-                    if (date.startsWith('2025-03-')) {
-                        // Update the local state to show immediate feedback
+                    } else if (status === 'Absent') {
+                        // Update leave days
                         setLeaveDays(prev => {
                             if (!prev.includes(day)) {
                                 return [...prev, day];
@@ -453,8 +491,22 @@ export default function DateCalendarServerRequest() {
                             return prev;
                         });
 
-                        // Remove from attendance days if present
+                        // Remove from other categories
                         setAttendanceDays(prev => prev.filter(d => d !== day));
+                        setWfhDays(prev => prev.filter(d => d !== day));
+
+                    } else if (status === 'WFH') {
+                        // Update WFH days
+                        setWfhDays(prev => {
+                            if (!prev.includes(day)) {
+                                return [...prev, day];
+                            }
+                            return prev;
+                        });
+
+                        // Remove from other categories
+                        setAttendanceDays(prev => prev.filter(d => d !== day));
+                        setLeaveDays(prev => prev.filter(d => d !== day));
                     }
                 }
 
@@ -485,6 +537,7 @@ export default function DateCalendarServerRequest() {
         setIsLoading(true);
         setLeaveDays([]);
         setAttendanceDays([]);
+        setWfhDays([]);
         fetchLeaveDays(date);
     };
 
@@ -502,6 +555,7 @@ export default function DateCalendarServerRequest() {
                         day: {
                             leaveDays,
                             attendanceDays,
+                            wfhDays,
                         },
                     }}
                     sx={{

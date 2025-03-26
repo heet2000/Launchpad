@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaTachometerAlt, FaFileUpload, FaBars, FaTimes, FaCheckCircle, FaSignOutAlt, FaVideo } from 'react-icons/fa';
-import { Checkbox, FormControlLabel, Typography, Snackbar, Alert, Button, Modal, Box } from '@mui/material';
+import { FaTachometerAlt, FaFileUpload, FaBars, FaTimes, FaCheckCircle, FaSignOutAlt, FaVideo, FaCalendarAlt, FaUserCheck } from 'react-icons/fa';
+import { FormControlLabel, Typography, Snackbar, Alert, Button, Modal, Box, Radio, RadioGroup, FormControl, FormLabel } from '@mui/material';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -112,11 +112,12 @@ const ModalContent = styled(Box)`
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: 500px;
-  background: rgba(20, 20, 30, 0.95);
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(15px);
   border: 2px solid var(--primary-color);
-  border-radius: 12px;
-  box-shadow: 0 0 30px rgba(157, 0, 255, 0.5);
-  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(157, 0, 255, 0.5);
+  padding: 35px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,34 +125,35 @@ const ModalContent = styled(Box)`
   
   @keyframes glowPulse {
     from {
-      box-shadow: 0 0 20px rgba(157, 0, 255, 0.3);
+      box-shadow: 0 0 25px rgba(157, 0, 255, 0.3);
     }
     to {
-      box-shadow: 0 0 40px rgba(157, 0, 255, 0.7);
+      box-shadow: 0 0 50px rgba(157, 0, 255, 0.7);
     }
   }
 `;
 
 const QRCodeContainer = styled.div`
-  margin: 25px 0;
-  padding: 20px;
+  margin: 30px 0;
+  padding: 25px;
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   transform: scale(1.05);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   
   &:hover {
     transform: scale(1.1);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
   }
 `;
 
 const QRImage = styled.div`
-  width: 200px;
-  height: 200px;
+  width: 220px;
+  height: 220px;
   background-color: #fff;
   padding: 10px;
   display: flex;
@@ -159,7 +161,7 @@ const QRImage = styled.div`
   align-items: center;
   font-size: 16px;
   color: #333;
-  border-radius: 5px;
+  border-radius: 8px;
   
   img {
     max-width: 100%;
@@ -171,9 +173,9 @@ const StepTitle = styled.h3`
   color: var(--primary-color);
   margin-bottom: 20px;
   text-align: center;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
-  text-shadow: 0 0 10px rgba(157, 0, 255, 0.5);
+  text-shadow: 0 0 12px rgba(157, 0, 255, 0.5);
   letter-spacing: 0.5px;
 `;
 
@@ -183,8 +185,8 @@ const StepList = styled.ol`
   width: 100%;
   
   li {
-    margin-bottom: 15px;
-    line-height: 1.5;
+    margin-bottom: 18px;
+    line-height: 1.6;
     font-size: 16px;
     
     strong {
@@ -246,7 +248,7 @@ const LogoutButton = styled(Button)`
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const [isPresent, setIsPresent] = useState(false);
+  const [attendanceStatus, setAttendanceStatus] = useState('absent'); // Default to absent
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
@@ -261,10 +263,11 @@ const Sidebar = () => {
     const checkTodayAttendance = async () => {
       // Check localStorage first
       const lastAttendanceDate = localStorage.getItem('lastAttendanceDate');
+      const lastAttendanceStatus = localStorage.getItem('lastAttendanceStatus');
       const today = formatDate();
 
-      if (lastAttendanceDate === today) {
-        setIsPresent(true);
+      if (lastAttendanceDate === today && lastAttendanceStatus) {
+        setAttendanceStatus(lastAttendanceStatus.toLowerCase());
         return;
       }
 
@@ -278,13 +281,17 @@ const Sidebar = () => {
           // Fetch attendance data from API using the exported function
           const attendanceData = await fetchAttendanceData(empId, authToken);
 
-          if (attendanceData && Array.isArray(attendanceData.PRESENT)) {
-            // Check if today's date is in the PRESENT array
+          if (attendanceData) {
+            // Check today's attendance status
             const todayStr = today; // Already in YYYY-MM-DD format
-            const isMarkedPresent = attendanceData.PRESENT.some(date => date === todayStr);
 
-            if (isMarkedPresent) {
-              setIsPresent(true);
+            if (Array.isArray(attendanceData.PRESENT) && attendanceData.PRESENT.some(date => date === todayStr)) {
+              setAttendanceStatus('present');
+              localStorage.setItem('lastAttendanceStatus', 'present');
+              localStorage.setItem('lastAttendanceDate', today);
+            } else if (Array.isArray(attendanceData.WFH) && attendanceData.WFH.some(date => date === todayStr)) {
+              setAttendanceStatus('wfh');
+              localStorage.setItem('lastAttendanceStatus', 'wfh');
               localStorage.setItem('lastAttendanceDate', today);
             }
           }
@@ -308,9 +315,9 @@ const Sidebar = () => {
     return `2025-03-${day}`;
   };
 
-  const handlePresentChange = async (event) => {
-    const isChecked = event.target.checked;
-    setIsPresent(isChecked);
+  const handleAttendanceChange = async (event) => {
+    const newStatus = event.target.value;
+    setAttendanceStatus(newStatus);
 
     setLoading(true);
 
@@ -331,11 +338,15 @@ const Sidebar = () => {
       // Get formatted date (will be in March 2025)
       const date = formatDate();
 
+      // Map the radio button value to the API status value
+      const apiStatus = newStatus === 'absent' ? 'Absent' :
+        newStatus === 'present' ? 'Present' : 'WFH';
+
       // Send attendance data to API with authToken in header
-      const response = await axios.post('https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/attendance', {
+      const response = await axios.post('https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance', {
         empId: empId,
         date: date,
-        status: isChecked ? 'Present' : "Absent"
+        status: apiStatus
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -344,10 +355,11 @@ const Sidebar = () => {
       });
 
       if (response.status === 201 || response.status === 200) {
-        // Save today's date as last attendance date
+        // Save today's date and status in localStorage
         localStorage.setItem('lastAttendanceDate', date);
+        localStorage.setItem('lastAttendanceStatus', newStatus);
 
-        setMessage('Attendance marked successfully!');
+        setMessage(`Attendance marked as ${apiStatus} successfully!`);
         setMessageType('success');
         setOpenSnackbar(true);
 
@@ -355,7 +367,7 @@ const Sidebar = () => {
         window.dispatchEvent(new CustomEvent('attendanceMarked', {
           detail: {
             date: date,
-            status: isChecked ? 'Present' : 'Absent',
+            status: apiStatus,
             empId: empId
           }
         }));
@@ -363,7 +375,7 @@ const Sidebar = () => {
         throw new Error('Failed to mark attendance');
       }
     } catch (error) {
-      setIsPresent(false);
+      setAttendanceStatus('absent'); // Reset to default on error
       setMessage(error.response?.data?.message || error.message || 'Failed to mark attendance');
       setMessageType('error');
       setOpenSnackbar(true);
@@ -421,6 +433,7 @@ const Sidebar = () => {
             <FaTachometerAlt />
             <span>Dashboard</span>
           </NavLink>
+
           {currentUser?.email === "admin@payoda.com" && (
             <NavLink
               to="/upload"
@@ -431,6 +444,25 @@ const Sidebar = () => {
             </NavLink>
           )}
 
+
+          <NavLink
+            to="/apply-leaves"
+            className={location.pathname === '/apply-leaves' ? 'active' : ''}
+          >
+            <FaCalendarAlt />
+            <span>Apply Leaves</span>
+          </NavLink>
+
+          {currentUser?.email === "admin@payoda.com" && (
+            <NavLink
+              to="/approve-leaves"
+              className={location.pathname === '/approve-leaves' ? 'active' : ''}
+            >
+              <FaUserCheck />
+              <span>Approve Leaves</span>
+            </NavLink>
+          )}
+
           <NavButton onClick={handleOpenTwilioModal}>
             <FaVideo />
             <span>WhatsApp Q&A</span>
@@ -438,36 +470,85 @@ const Sidebar = () => {
         </NavLinks>
 
         <AttendanceContainer>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isPresent}
-                onChange={handlePresentChange}
-                disabled={loading}
-                sx={{
-                  color: 'rgba(138, 92, 245, 0.7)',
-                  '&.Mui-checked': {
-                    color: 'var(--primary-color)',
-                  },
-                }}
+          <FormControl component="fieldset">
+            <FormLabel
+              component="legend"
+              sx={{
+                color: 'var(--primary-color)',
+                fontSize: '14px',
+                fontWeight: '600',
+                marginBottom: '10px'
+              }}
+            >
+              Attendance Status:
+            </FormLabel>
+            <RadioGroup
+              value={attendanceStatus}
+              onChange={handleAttendanceChange}
+              name="attendance-status-group"
+            >
+              <FormControlLabel
+                value="present"
+                control={
+                  <Radio
+                    disabled={loading}
+                    sx={{
+                      color: 'rgba(138, 92, 245, 0.7)',
+                      '&.Mui-checked': {
+                        color: '#4caf50',
+                      },
+                      padding: '4px'
+                    }}
+                  />
+                }
+                label={
+                  <Typography
+                    sx={{
+                      color: attendanceStatus === 'present' ? '#4caf50' : 'rgba(255, 255, 255, 0.8)',
+                      fontWeight: attendanceStatus === 'present' ? 600 : 400,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Mark Present
+                    {attendanceStatus === 'present' && <FaCheckCircle color="#4cd964" />}
+                  </Typography>
+                }
               />
-            }
-            label={
-              <Typography
-                sx={{
-                  color: isPresent ? '#a18cd1' : 'rgba(255, 255, 255, 0.8)',
-                  fontWeight: isPresent ? 600 : 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '14px',
-                }}
-              >
-                {loading ? 'Marking Attendance...' : 'Mark Present'}
-                {isPresent && <FaCheckCircle color="#4cd964" />}
-              </Typography>
-            }
-          />
+              <FormControlLabel
+                value="wfh"
+                control={
+                  <Radio
+                    disabled={loading}
+                    sx={{
+                      color: 'rgba(138, 92, 245, 0.7)',
+                      '&.Mui-checked': {
+                        color: '#2196f3',
+                      },
+                      padding: '4px'
+                    }}
+                  />
+                }
+                label={
+                  <Typography
+                    sx={{
+                      color: attendanceStatus === 'wfh' ? '#2196f3' : 'rgba(255, 255, 255, 0.8)',
+                      fontWeight: attendanceStatus === 'wfh' ? 600 : 400,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Mark WFH
+                    {attendanceStatus === 'wfh' && <FaCheckCircle color="#2196f3" />}
+                  </Typography>
+                }
+              />
+            </RadioGroup>
+          </FormControl>
 
           <LogoutButton
             startIcon={<FaSignOutAlt />}
@@ -484,8 +565,8 @@ const Sidebar = () => {
         onClose={handleCloseTwilioModal}
         aria-labelledby="twilio-modal-title"
         sx={{
-          backdropFilter: 'blur(8px)',
-          backgroundColor: 'rgba(0, 0, 0, 0.6)'
+          backdropFilter: 'blur(12px)',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)'
         }}
       >
         <ModalContent>
@@ -510,20 +591,20 @@ const Sidebar = () => {
             variant="contained"
             onClick={handleCloseTwilioModal}
             sx={{
-              mt: 4,
-              py: 1.2,
-              px: 4,
+              mt: 5,
+              py: 1.4,
+              px: 5,
               background: 'linear-gradient(135deg, var(--primary-color), var(--accent-color))',
-              color: 'var(--dark-color)',
-              fontSize: '16px',
+              color: 'white',
+              fontSize: '17px',
               fontWeight: 'bold',
-              borderRadius: '8px',
-              boxShadow: '0 4px 15px rgba(157, 0, 255, 0.3)',
+              borderRadius: '10px',
+              boxShadow: '0 6px 18px rgba(157, 0, 255, 0.4)',
               transition: 'all 0.3s ease',
               '&:hover': {
                 background: 'linear-gradient(135deg, var(--accent-color), var(--primary-color))',
-                transform: 'translateY(-3px)',
-                boxShadow: '0 8px 20px rgba(157, 0, 255, 0.5)',
+                transform: 'translateY(-4px)',
+                boxShadow: '0 10px 24px rgba(157, 0, 255, 0.6)',
               }
             }}
           >

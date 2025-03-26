@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaUser, FaEnvelope, FaPhone, FaUserTag, FaUserTie, FaLock } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaUserTag, FaUserTie, FaLock, FaBuilding, FaMapMarkerAlt } from 'react-icons/fa';
 import { GiSkills } from "react-icons/gi";
 import { GrUserManager } from "react-icons/gr";
 import axios from 'axios';
@@ -133,12 +133,14 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [password, setPassword] = useState('');
+  const [clientCompany, setClientCompany] = useState('');
+  const [location, setLocation] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !email || !phone || !role || !level || !reportsTo || !skills || !password) {
+    if (!name || !email || !phone || !role || !level || !reportsTo || !skills || !password || !clientCompany || !location) {
       setError('Please fill in all fields');
       return;
     }
@@ -151,7 +153,9 @@ const Register = () => {
       level: parseInt(level, 10),
       reportsTo: parseInt(reportsTo, 10),
       skills,
-      password
+      password,
+      clientCompany,
+      location
     };
 
     try {
@@ -159,7 +163,7 @@ const Register = () => {
       setLoading(true);
 
       localStorage.setItem('registeredUser', JSON.stringify(userData));
-      const response = await axios.post('https://4bfb-2401-4900-1cb2-8c47-60ed-23ee-446f-d0f3.ngrok-free.app/register', userData, {
+      const response = await axios.post('https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/register', userData, {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': 'abcdef'
@@ -318,6 +322,32 @@ const Register = () => {
 
               <InputGroup>
                 <InputIcon>
+                  <FaBuilding />
+                </InputIcon>
+                <Input
+                  type="text"
+                  placeholder="Client Company"
+                  value={clientCompany}
+                  onChange={(e) => setClientCompany(e.target.value)}
+                  required
+                />
+              </InputGroup>
+
+              <InputGroup>
+                <InputIcon>
+                  <FaMapMarkerAlt />
+                </InputIcon>
+                <Input
+                  type="text"
+                  placeholder="Location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                />
+              </InputGroup>
+
+              <InputGroup>
+                <InputIcon>
                   <FaLock />
                 </InputIcon>
                 <Input
@@ -328,6 +358,7 @@ const Register = () => {
                   required
                 />
               </InputGroup>
+
 
               <SubmitButton
                 type="submit"
