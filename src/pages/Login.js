@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 
 const LoginContainer = styled.div`
   display: flex;
