@@ -171,7 +171,7 @@ const Dashboard = () => {
                                             height: '100% !important'
                                         }
                                     }}>
-                                        <GaugeChart data={leaveData?.remaining_leaves || 15} maxValue={leaveData?.max_allowed_leaves || 22} />
+                                        <GaugeChart data={leaveData?.remaining_leaves || 0} maxValue={leaveData?.max_allowed_leaves || 22} />
                                     </Box>
                                 </Box>
                             </motion.div>

@@ -197,7 +197,7 @@ const ApproveLeaves = () => {
             const authToken = localStorage.getItem('authToken');
 
             // Build the API URL with filters
-            let url = `https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/employees/${currentUser.empId}/requests?type=approval`;
+            let url = `https://emploeeservice.onrender.com/employees/${currentUser.empId}/requests?type=approval`;
 
             const response = await axios.post(url, {}, {
                 headers: {
@@ -241,7 +241,7 @@ const ApproveLeaves = () => {
             const authToken = localStorage.getItem('authToken');
 
             const response = await axios.put(
-                `https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/request-approvals/${leaveId}`,
+                `https://emploeeservice.onrender.com/request-approvals/${leaveId}`,
                 { requestStatus: status },
                 {
                     headers: {

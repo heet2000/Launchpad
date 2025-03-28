@@ -163,7 +163,7 @@ const Register = () => {
       setLoading(true);
 
       localStorage.setItem('registeredUser', JSON.stringify(userData));
-      const response = await axios.post('https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/register', userData, {
+      const response = await axios.post('https://emploeeservice.onrender.com/register', userData, {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': 'abcdef'
@@ -205,7 +205,7 @@ const Register = () => {
       >
         <div className="animated-border">
           <div className="form-card">
-            <RegisterTitle>Create Account</RegisterTitle>
+            <RegisterTitle>Create DocuSeek Account</RegisterTitle>
 
             {error && <ErrorMessage>{error}</ErrorMessage>}
 

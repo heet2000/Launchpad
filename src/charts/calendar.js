@@ -177,7 +177,7 @@ export async function fetchAttendanceData(empId, authToken) {
     try {
         // Try with standard headers first
         try {
-            const response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+            const response = await axios.post(`https://emploeeservice.onrender.com/attendance/${empId}?days=31`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Accept': 'application/json',
@@ -193,7 +193,7 @@ export async function fetchAttendanceData(empId, authToken) {
         } catch (error) {
             console.log('First attempt failed, trying with Postman-like headers');
             // If first attempt fails, try with Postman-like headers
-            const response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+            const response = await axios.post(`https://emploeeservice.onrender.com/attendance/${empId}?days=31`, {}, {
                 headers: {
                     'Authorization': `Bearer ${authToken}`,
                     'Accept': '*/*',
@@ -300,7 +300,7 @@ export default function DateCalendarServerRequest({ setLeaveData }) {
             // Try to fetch attendance data from API
             let response;
             try {
-                response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
+                response = await axios.post(`https://emploeeservice.onrender.com/attendance/${empId || 5}?days=31`, {}, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Accept': 'application/json',
@@ -314,7 +314,7 @@ export default function DateCalendarServerRequest({ setLeaveData }) {
                 // If first request fails, try with different headers that mimic Postman
                 if (!controller.signal.aborted) {
                     console.log('Trying with Postman-like headers');
-                    response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId || 5}?days=31`, {}, {
+                    response = await axios.post(`https://emploeeservice.onrender.com/attendance/${empId || 5}?days=31`, {}, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`,
                             'Accept': '*/*',
@@ -339,7 +339,7 @@ export default function DateCalendarServerRequest({ setLeaveData }) {
                 if (isHtmlResponse) {
                     console.error('Received HTML response instead of JSON');
                     // Try one more time with explicit JSON headers
-                    response = await axios.post(`https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance/${empId}?days=31`, {}, {
+                    response = await axios.post(`https://emploeeservice.onrender.com/attendance/${empId}?days=31`, {}, {
                         headers: {
                             'Authorization': `Bearer ${authToken}`,
                             'Accept': 'application/json',
@@ -541,8 +541,6 @@ export default function DateCalendarServerRequest({ setLeaveData }) {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateCalendar
                     loading={isLoading}
-                    defaultValue={initialValue}
-                    value={initialValue}
                     onMonthChange={handleMonthChange}
                     minDate={dayjs('2025-03-01')}
                     maxDate={dayjs('2025-03-31')}

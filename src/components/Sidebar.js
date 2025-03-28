@@ -289,22 +289,25 @@ const Sidebar = () => {
           const attendanceData = await fetchAttendanceData(empId, authToken);
           console.log('Attendance data received:', attendanceData);
 
-          if (attendanceData) {
+          if (attendanceData?.attendance) {
             // Check today's attendance status
             const todayStr = today; // Already in YYYY-MM-DD format
 
+            console.log(attendanceData, "attendanceData");
+
+
             // Try multiple possible formats for the API response
-            if (Array.isArray(attendanceData.PRESENT) && attendanceData.PRESENT.some(date => date === todayStr)) {
+            if (Array.isArray(attendanceData?.attendance?.PRESENT) && attendanceData?.attendance?.PRESENT.some(date => date === todayStr)) {
               setAttendanceStatus('present');
               localStorage.setItem('lastAttendanceStatus', 'present');
               localStorage.setItem('lastAttendanceDate', today);
-            } else if (Array.isArray(attendanceData.WFH) && attendanceData.WFH.some(date => date === todayStr)) {
+            } else if (Array.isArray(attendanceData?.attendance?.WFH) && attendanceData?.attendance?.WFH.some(date => date === todayStr)) {
               setAttendanceStatus('wfh');
               localStorage.setItem('lastAttendanceStatus', 'wfh');
               localStorage.setItem('lastAttendanceDate', today);
-            } else if (attendanceData.attendance) {
+            } else if (attendanceData?.attendance?.attendance) {
               // Alternative format where attendance is a nested property
-              const data = attendanceData.attendance;
+              const data = attendanceData?.attendance?.attendance;
 
               if (Array.isArray(data.PRESENT) && data.PRESENT.some(date => date === todayStr)) {
                 setAttendanceStatus('present');
@@ -365,7 +368,7 @@ const Sidebar = () => {
         newStatus === 'present' ? 'Present' : 'WFH';
 
       // Send attendance data to API with authToken in header
-      const response = await axios.post('https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/attendance', {
+      const response = await axios.post('https://emploeeservice.onrender.com/attendance', {
         empId: empId,
         date: date,
         status: apiStatus
@@ -445,7 +448,7 @@ const Sidebar = () => {
         animate={{ x: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <Logo>LaunchPad</Logo>
+        <Logo>DocuSeek</Logo>
 
         <NavLinks>
           <NavLink

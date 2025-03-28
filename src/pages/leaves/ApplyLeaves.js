@@ -98,9 +98,6 @@ const StyledSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline': {
         borderColor: 'rgba(255, 255, 255, 0.3)',
     },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-        borderColor: '#4caf50',
-    },
     '&:hover .MuiOutlinedInput-notchedOutline': {
         borderColor: 'rgba(255, 255, 255, 0.5)',
     },
@@ -227,7 +224,7 @@ const ApplyLeaves = () => {
             const authToken = localStorage.getItem('authToken');
 
             // Build the API URL with filters
-            let url = `https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/employees/${currentUser.empId}/requests?type=created`;
+            let url = `https://emploeeservice.onrender.com/employees/${currentUser.empId}/requests?type=created`;
 
             const response = await axios.post(url, {}, {
                 headers: {
@@ -293,7 +290,7 @@ const ApplyLeaves = () => {
             };
 
             const response = await axios.post(
-                'https://f767-2401-4900-1cb2-8c47-8516-9f7e-5b84-e7e8.ngrok-free.app/request-approvals',
+                'https://emploeeservice.onrender.com/request-approvals',
                 leaveData,
                 {
                     headers: {
@@ -390,9 +387,6 @@ const ApplyLeaves = () => {
                                                     '&:hover fieldset': {
                                                         borderColor: 'rgba(255, 255, 255, 0.5)',
                                                     },
-                                                    '&.Mui-focused fieldset': {
-                                                        borderColor: '#4caf50',
-                                                    },
                                                     '& input': {
                                                         color: '#ffffff'
                                                     },
@@ -402,15 +396,9 @@ const ApplyLeaves = () => {
                                                     '& .MuiInputAdornment-root': {
                                                         color: 'rgba(255, 255, 255, 0.8)'
                                                     },
-                                                    '&.Mui-focused .MuiSvgIcon-root': {
-                                                        color: '#4caf50'
-                                                    }
                                                 },
                                                 '& .MuiFormLabel-root': {
                                                     color: 'rgba(255, 255, 255, 0.7)',
-                                                    '&.Mui-focused': {
-                                                        color: '#4caf50'
-                                                    }
                                                 }
                                             }}
                                         />
@@ -432,9 +420,6 @@ const ApplyLeaves = () => {
                                                     '&:hover fieldset': {
                                                         borderColor: 'rgba(255, 255, 255, 0.5)',
                                                     },
-                                                    '&.Mui-focused fieldset': {
-                                                        borderColor: '#4caf50',
-                                                    },
                                                     '& input': {
                                                         color: '#ffffff',
                                                         borderColor: '#ffffff'
@@ -445,15 +430,9 @@ const ApplyLeaves = () => {
                                                     '& .MuiInputAdornment-root': {
                                                         color: 'rgba(255, 255, 255, 0.8)'
                                                     },
-                                                    '&.Mui-focused .MuiSvgIcon-root': {
-                                                        color: '#4caf50'
-                                                    }
                                                 },
                                                 '& .MuiFormLabel-root': {
                                                     color: 'rgba(255, 255, 255, 0.7)',
-                                                    '&.Mui-focused': {
-                                                        color: '#4caf50'
-                                                    }
                                                 }
                                             }}
                                         />

@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -135,6 +136,7 @@ const Login = () => {
       setError('');
       setLoading(true);
       await login(email, password);
+
       navigate('/dashboard');
     } catch (error) {
       setError('Failed to log in. ' + error.message);
@@ -152,7 +154,7 @@ const Login = () => {
       >
         <div className="animated-border">
           <div className="form-card">
-            <LoginTitle>Welcome Back</LoginTitle>
+            <LoginTitle>Welcome to DocuSeek</LoginTitle>
 
             {error && <ErrorMessage>{error}</ErrorMessage>}
 
