@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box,
     Container,
@@ -190,6 +190,53 @@ const ApproveLeaves = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [filterType, setFilterType] = useState('ALL');
     const [filterStatus, setFilterStatus] = useState('ALL');
+    const [employeeList, setEmployeeList] = useState([]);
+    const userData = localStorage.getItem('user');
+    const user = JSON.parse(userData);
+    const empId = user.empId;
+
+    // Load employee data
+    useEffect(() => {
+        const loadEmployeeData = () => {
+            try {
+                const allEmployeeData = localStorage.getItem('allEmployees');
+                if (allEmployeeData) {
+                    const parsedData = JSON.parse(allEmployeeData);
+                    setEmployeeList(Array.isArray(parsedData) ? parsedData : []);
+                    console.log("Loaded employee data:", parsedData);
+                } else {
+                    console.log("No employee data found in localStorage");
+                    // If employee data is not available, fetch it
+                    fetchEmployeeData();
+                }
+            } catch (error) {
+                console.error("Error loading employee data:", error);
+                setEmployeeList([]);
+            }
+        };
+
+        loadEmployeeData();
+    }, []);
+
+    // Function to fetch employee data if not available in localStorage
+    const fetchEmployeeData = async () => {
+        try {
+            const authToken = localStorage.getItem('authToken');
+            const response = await axios.post('https://emploeeservice.onrender.com/employees', {}, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (response.status === 200 && response.data) {
+                localStorage.setItem('allEmployees', JSON.stringify(response.data));
+                setEmployeeList(response.data);
+                console.log("Fetched employee data:", response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch employees data:', error);
+        }
+    };
 
     const fetchLeaveRequests = useCallback(async () => {
         setLoading(true);
@@ -207,6 +254,7 @@ const ApproveLeaves = () => {
             });
 
             if (response.status === 200) {
+                console.log("Fetched leave requests:", response.data);
                 setLeaveRequests(response.data || []);
             }
         } catch (error) {
@@ -237,12 +285,18 @@ const ApproveLeaves = () => {
             return;
         }
 
+        // Set processing state for this leave
+        setProcessing(prev => ({ ...prev, [leaveId]: true }));
+
         try {
             const authToken = localStorage.getItem('authToken');
 
             const response = await axios.put(
                 `https://emploeeservice.onrender.com/request-approvals/${leaveId}`,
-                { requestStatus: status },
+                {
+                    requestStatus: status,
+                    userId: empId,
+                },
                 {
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
@@ -254,12 +308,12 @@ const ApproveLeaves = () => {
             console.log(response);
 
             if (response.status === 200) {
-                setMessage(`Leave request ${status.toLowerCase()}`);
+                setMessage(`Leave request ${status.toLowerCase()} successfully`);
                 setMessageType('success');
                 setOpenSnackbar(true);
 
-                // Remove the processed request from the list or update its status
-                setLeaveRequests(prev => prev.filter(leave => leave.id !== leaveId));
+                // Fetch updated leave requests instead of removing from the list
+                fetchLeaveRequests();
             }
         } catch (error) {
             console.error(`Error ${status.toLowerCase()} leave request:`, error);
@@ -276,9 +330,23 @@ const ApproveLeaves = () => {
         setOpenSnackbar(false);
     };
 
+    const employeeName = useMemo(() =>
+        employeeList.map(employee => {
+            return {
+                empId: employee.id || employee.empId,
+                employeeName: employee?.name
+            }
+        }),
+        [employeeList]);
+
+    console.log("Mapped Employee Names:", employeeName);
+
     // Updated filter function to include status filtering
     const filteredLeaveRequests = React.useMemo(() => {
         if (!leaveRequests || !Array.isArray(leaveRequests)) return [];
+
+        console.log("Original Leave Requests:", leaveRequests);
+        console.log("Current Employee List:", employeeList);
 
         return leaveRequests.filter(leave => {
             // Filter by type if filter is not set to ALL
@@ -293,8 +361,36 @@ const ApproveLeaves = () => {
             }
 
             return true;
+        }).map(leave => {
+            // Find the employee name from the employee list
+            const matchingEmployee = employeeList.find(emp => {
+                // Ensure both values are strings for comparison
+                const empIdentifier = String(emp.id || emp.empId || '');
+                const leaveRequester = String(leave.requesterEmpId || '');
+
+                // Check if there's a match using loose equality (handles string/number differences)
+                const isMatch = empIdentifier === leaveRequester;
+
+                if (isMatch) {
+                    console.log(`Found match for ${leaveRequester}:`, emp);
+                }
+
+                return isMatch;
+            });
+
+            console.log(`Processing leave ${leave.id || ''}:`, {
+                requesterEmpId: leave.requesterEmpId,
+                foundEmployee: matchingEmployee ? true : false,
+                foundName: matchingEmployee?.name,
+                assignedName: matchingEmployee?.name || 'Unknown'
+            });
+
+            return {
+                ...leave,
+                requestName: matchingEmployee?.name || 'Unknown'
+            };
         });
-    }, [leaveRequests, filterType, filterStatus]);
+    }, [leaveRequests, filterType, filterStatus, employeeList]);
 
     return (
         <PageContainer>
@@ -366,7 +462,7 @@ const ApproveLeaves = () => {
                                             <StyledTableRow key={leave.id || leave._id}>
                                                 <StyledTableCell>
                                                     <Typography sx={{ fontWeight: 600 }}>
-                                                        {leave.requestName || ""}
+                                                        {leave.requestName || "Unknown"}
                                                     </Typography>
                                                     <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                                                         Employee ID: {leave.requesterEmpId || ""}

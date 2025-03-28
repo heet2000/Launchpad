@@ -208,6 +208,45 @@ const UploadButton = styled(motion.button)`
   }
 `;
 
+const SelectContainer = styled.div`
+  width: 100%;
+  margin-bottom: 20px;
+`;
+
+const SelectLabel = styled.label`
+  display: block;
+  color: var(--light-color);
+  margin-bottom: 8px;
+  font-weight: 500;
+`;
+
+const StyledSelect = styled.select`
+  width: 100%;
+  padding: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(157, 0, 255, 0.2);
+  color: var(--light-color);
+  font-size: 16px;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(157, 0, 255, 0.2);
+  }
+  
+  &:hover {
+    border-color: var(--primary-color);
+  }
+  
+  option {
+    background: #1e1e2f;
+    color: var(--light-color);
+  }
+`;
+
 const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
 
@@ -223,7 +262,13 @@ const FileUpload = () => {
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [documentType, setDocumentType] = useState('');
     const fileInputRef = useRef(null);
+
+    // Handle document type change
+    const handleDocumentTypeChange = (e) => {
+        setDocumentType(e.target.value);
+    };
 
     // Handle file selection
     const handleFileChange = (e) => {
@@ -320,7 +365,7 @@ const FileUpload = () => {
 
     // Upload all files
     const handleUploadAllFiles = async () => {
-        if (files.length === 0) return;
+        if (files.length === 0 || !documentType) return;
 
         setUploading(true);
         setErrorMessage('');
@@ -342,8 +387,8 @@ const FileUpload = () => {
                 formData.append('files', fileObj.file);
             });
 
-            // Upload files using the API
-            const response = await axios.post('https://information-retrieval-service.onrender.com/upload', formData, {
+            // Upload files using the API with document_type query parameter
+            const response = await axios.post(`https://information-retrieval-service.onrender.com/upload?document_type=${documentType}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'token': 'abcdef'
@@ -413,6 +458,20 @@ const FileUpload = () => {
                     Drag and drop files or click to select files to upload.
                 </UploadDescription>
 
+                <SelectContainer>
+                    <SelectLabel>Select Document Type</SelectLabel>
+                    <StyledSelect
+                        value={documentType}
+                        onChange={handleDocumentTypeChange}
+                        required
+                    >
+                        <option value="">Select a document type</option>
+                        <option value="A">Public</option>
+                        <option value="B">Protected</option>
+                        <option value="C">Private</option>
+                    </StyledSelect>
+                </SelectContainer>
+
                 {successMessage && (
                     <SuccessMessage
                         initial={{ opacity: 0, y: -10 }}
@@ -443,12 +502,13 @@ const FileUpload = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className={isDragActive ? 'file-upload-dragover' : ''}
+                        style={{ opacity: documentType ? 1 : 0.6, pointerEvents: documentType ? 'auto' : 'none' }}
                     >
                         <div className="upload-content">
                             <UploadIcon>
                                 <FaCloudUploadAlt />
                             </UploadIcon>
-                            <p>Drop your files here or click to browse</p>
+                            <p>{documentType ? 'Drop your files here or click to browse' : 'Select a document type first'}</p>
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -456,6 +516,7 @@ const FileUpload = () => {
                                 multiple
                                 accept=".txt,.pdf"
                                 style={{ display: 'none' }}
+                                disabled={!documentType}
                             />
                         </div>
                     </DropZone>
@@ -493,7 +554,7 @@ const FileUpload = () => {
 
                         <UploadButton
                             onClick={handleUploadAllFiles}
-                            disabled={uploading || files.length === 0}
+                            disabled={uploading || files.length === 0 || !documentType}
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.98 }}
                         >

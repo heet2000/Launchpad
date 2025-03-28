@@ -5,6 +5,7 @@ import CosmicBackground from './components/CosmicBackground';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import FileUpload from './pages/FileUpload';
 import ApplyLeaves from './pages/leaves/ApplyLeaves';
 import ApproveLeaves from './pages/leaves/ApproveLeaves';
@@ -42,6 +43,19 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Content selector based on user role
+const DashboardSelector = () => {
+  const { currentUser } = useAuth();
+
+  // Check if user is admin
+  if (currentUser && currentUser.email === 'admin@payoda.com') {
+    return <AdminDashboard />;
+  }
+
+  // Otherwise show regular dashboard
+  return <Dashboard />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -71,7 +85,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardSelector />
               </ProtectedRoute>
             }
           />

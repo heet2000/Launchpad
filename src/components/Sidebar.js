@@ -259,6 +259,7 @@ const Sidebar = () => {
   const { currentUser, logout } = useAuth();
   const authToken = localStorage.getItem('authToken');
 
+
   // Check if attendance was already marked today
   useEffect(() => {
     const checkTodayAttendance = async () => {
@@ -468,7 +469,6 @@ const Sidebar = () => {
               <span>Upload Files</span>
             </NavLink>
           )}
-
           <NavLink
             to="/apply-leaves"
             className={location.pathname === '/apply-leaves' ? 'active' : ''}

@@ -446,7 +446,7 @@ const ApplyLeaves = () => {
                                         disabled={submitting}
                                         startIcon={submitting && <CircularProgress size={20} color="inherit" />}
                                     >
-                                        {submitting ? 'Submitting...' : 'Submit Leave Request'}
+                                        {submitting ? 'Submitting...' : 'Submit Request'}
                                     </SubmitButton>
                                 </Box>
                             </StyledCard>

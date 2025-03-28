@@ -81,6 +81,20 @@ export const AuthProvider = ({ children }) => {
                 // Generate mock token
                 const mockToken = response.data?.token;
 
+                try {
+                    const employeesResponse = await axios.post('https://emploeeservice.onrender.com/employees', {}, {
+                        headers: {
+                            'Authorization': `Bearer ${mockToken}`
+                        }
+                    });
+
+                    if (employeesResponse.status === 200 && employeesResponse.data) {
+                        localStorage.setItem('allEmployees', JSON.stringify(employeesResponse.data));
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch employees data:', error);
+                }
+
                 // Set expiration time (current time + 30 minutes)
                 const expirationTime = new Date().getTime() + TOKEN_EXPIRATION;
 

@@ -46,7 +46,6 @@ const Dashboard = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
     const [isTablet, setIsTablet] = useState(window.innerWidth > 600 && window.innerWidth <= 960);
     const [leaveData, setLeaveData] = useState({});
-    console.log(leaveData, "leaveData");
 
     const monthwiseLeave = useMemo(() => {
         if (leaveData?.monthly_leaves) {
